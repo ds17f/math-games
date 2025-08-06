@@ -1,0 +1,17 @@
+{
+  "name": "dotgame",
+  "version": "1.0.0",
+  "description": "A simple web application that displays dot cards (like dice, but from 1 to 10 dots) with timer functionality.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "open": "^10.2.0"
+  }
+}
