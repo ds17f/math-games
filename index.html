@@ -342,10 +342,14 @@
                 if (!config) return null;
                 
                 const storedScores = localStorage.getItem(config.storageKey);
+                console.log('Raw stored scores for', gameId, ':', storedScores);
+                
                 if (!storedScores) return null;
                 
                 try {
-                    return JSON.parse(storedScores);
+                    const parsed = JSON.parse(storedScores);
+                    console.log('Parsed scores for', gameId, ':', parsed);
+                    return parsed;
                 } catch (e) {
                     console.error('Failed to parse stored scores:', e);
                     return null;
@@ -355,17 +359,35 @@
             // Generate a unique configuration key
             getConfigKey: function(gameId, configOptions) {
                 const config = this.gameConfig[gameId];
-                if (!config || !config.configParams) return null;
+                console.log('Getting config key for', gameId, 'with options:', configOptions);
                 
-                // Create a key based on configuration parameters
-                // e.g., "target9_grid6_time2"
-                return config.configParams
+                if (!config || !config.configParams) {
+                    console.log('No config or configParams for', gameId);
+                    return null;
+                }
+                
+                console.log('Config params for', gameId, ':', config.configParams);
+                
+                // Create a key based on configuration parameters using a consistent format
+                // e.g., "t9_g6_m2" for target 9, grid 6x6, time 2min
+                const key = config.configParams
                     .map(param => {
                         const value = configOptions[param];
-                        return value !== undefined ? `${param}${value}` : '';
+                        console.log('Parameter', param, 'has value', value);
+                        
+                        // Use shortened parameter names to make keys more readable
+                        let shortParam = param;
+                        if (param === 'targetNumber') shortParam = 't';
+                        if (param === 'gridSize') shortParam = 'g';
+                        if (param === 'timeLimit') shortParam = 'm'; // minutes
+                        
+                        return value !== undefined ? `${shortParam}${value}` : '';
                     })
                     .filter(Boolean)
                     .join('_');
+                    
+                console.log('Generated key:', key);
+                return key;
             },
             
             // Get best score for a specific game configuration
@@ -403,21 +425,36 @@
             
             // Set high score for a game (if higher than current)
             setScore: function(gameId, score, configOptions = {}) {
+                console.log('Setting score for', gameId, ':', score, 'with options:', configOptions);
+                
                 const config = this.gameConfig[gameId];
-                if (!config) return false;
+                if (!config) {
+                    console.log('No config found for game ID:', gameId);
+                    return false;
+                }
                 
                 // For games with detailed scoring
                 if (this.usesDetailedScores(gameId) && Object.keys(configOptions).length > 0) {
+                    console.log('Game uses detailed scoring. Getting config key...');
                     const configKey = this.getConfigKey(gameId, configOptions);
-                    if (!configKey) return false;
+                    
+                    if (!configKey) {
+                        console.log('Failed to generate config key');
+                        return false;
+                    }
+                    
+                    console.log('Using config key:', configKey);
                     
                     // Get existing scores or initialize new object
                     const scores = this.getDetailedScores(gameId) || {};
+                    console.log('Retrieved existing scores:', scores);
                     
                     // Check if new score is better than existing score for this configuration
                     const existingData = scores[configKey];
+                    console.log('Existing data for this config:', existingData);
                     
                     if (!existingData || score > existingData.score) {
+                        console.log('New score is better (or first score for this config)');
                         // Store score with configuration and timestamp
                         scores[configKey] = {
                             score: score,
@@ -425,10 +462,17 @@
                             timestamp: new Date().toISOString()
                         };
                         
-                        localStorage.setItem(config.storageKey, JSON.stringify(scores));
+                        const json = JSON.stringify(scores);
+                        console.log('Saving to localStorage with key', config.storageKey, 'value:', json);
+                        localStorage.setItem(config.storageKey, json);
+                        
+                        // Verify storage worked
+                        const savedItem = localStorage.getItem(config.storageKey);
+                        console.log('Verification - item saved in localStorage:', savedItem);
                         return true; // Score was updated
                     }
                     
+                    console.log('Score was not higher than existing score');
                     return false; // Score was not higher
                 }
                 
@@ -505,10 +549,14 @@
             const noScoresMessage = document.getElementById('no-scores-message');
             const scores = ScoreManager.getAllScores();
             
+            console.log('Rendering leaderboard with scores:', scores);
+            console.log('Game filter:', gameFilter, 'Config filter:', configFilter);
+            
             // Check if we have any scores
             let hasAnyScores = false;
             for (const gameId in scores) {
                 const gameScores = scores[gameId];
+                console.log('Game', gameId, 'scores:', gameScores);
                 if (gameScores !== null && (typeof gameScores === 'object' ? Object.keys(gameScores).length > 0 : true)) {
                     hasAnyScores = true;
                     break;
@@ -547,14 +595,20 @@
                     
                     // Apply configuration filter if specified
                     if (configFilter !== 'all') {
+                        console.log('Applying config filter:', configFilter, 'to scores:', filteredScores);
                         filteredScores = filteredScores.filter(item => {
                             // For sumgame, filter by specific configuration parameters
-                            if (gameId === 'sumgame') {
+                            if (gameId === 'sumgame' && item.config) {
                                 const [paramName, paramValue] = configFilter.split(':');
-                                return item.config[paramName] == paramValue; // Use loose equality for string/number comparison
+                                console.log('Checking item:', item, 'for param', paramName, '=', paramValue);
+                                const itemValue = item.config[paramName];
+                                const matches = itemValue == paramValue; // Use loose equality for string/number comparison
+                                console.log('Match result:', matches);
+                                return matches;
                             }
                             return false;
                         });
+                        console.log('Filtered scores:', filteredScores);
                     }
                     
                     const topScores = filteredScores
@@ -756,6 +810,22 @@
         
         // Initialize the leaderboard
         document.addEventListener('DOMContentLoaded', function() {
+            // Add a test score if needed for debugging
+            /*
+            const testConfig = { targetNumber: 9, gridSize: 6, timeLimit: 2 };
+            const testKey = 'targetNumber9_gridSize6_timeLimit2';
+            const testScores = {};
+            testScores[testKey] = {
+                score: 10,
+                config: testConfig,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('sumGameHighScores', JSON.stringify(testScores));
+            */
+            
+            // Check localStorage content
+            console.log('LocalStorage content for sumGameHighScores:', localStorage.getItem('sumGameHighScores'));
+            
             // Render the leaderboard
             renderLeaderboard();
             

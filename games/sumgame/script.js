@@ -635,13 +635,39 @@ function getCurrentConfig() {
 function getHighScore() {
     const config = getCurrentConfig();
     
+    console.log('Getting high score for config:', config);
+    
     // Try to get high score from parent ScoreManager first
     if (window.parent && window.parent.ScoreManager) {
-        return window.parent.ScoreManager.getScore('sumgame', config) || 0;
+        console.log('Using parent ScoreManager to get score');
+        const score = window.parent.ScoreManager.getScore('sumgame', config) || 0;
+        console.log('Score from ScoreManager:', score);
+        return score;
     } else {
         // Fallback to localStorage with a simple key format
+        console.log('Parent ScoreManager not available, using localStorage fallback');
+        
+        // First try with the new key format (same as parent ScoreManager)
+        const keyParent = 'sumGameHighScores';
+        const keyConfig = `t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
+        
+        console.log('Looking for score with parent key:', keyParent, 'and config key:', keyConfig);
+        
+        try {
+            const scores = JSON.parse(localStorage.getItem(keyParent) || '{}');
+            if (scores[keyConfig] && scores[keyConfig].score) {
+                console.log('Found score in parent format:', scores[keyConfig].score);
+                return scores[keyConfig].score;
+            }
+        } catch (e) {
+            console.log('Error parsing parent format scores:', e);
+        }
+        
+        // Fall back to the old format if the new format isn't found
         const key = `sumGameHighScore_t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
-        return parseInt(localStorage.getItem(key) || '0');
+        const score = parseInt(localStorage.getItem(key) || '0');
+        console.log('Score from legacy localStorage format:', score, 'for key:', key);
+        return score;
     }
 }
 
@@ -667,18 +693,53 @@ function saveHighScore() {
     const config = getCurrentConfig();
     let scoreUpdated = false;
     
+    console.log('Saving high score:', currentScore, 'with config:', config);
+    
     // Check if ScoreManager exists (available from parent window)
     if (window.parent && window.parent.ScoreManager) {
         // Use ScoreManager from the parent window
+        console.log('Using parent ScoreManager to save score');
         scoreUpdated = window.parent.ScoreManager.setScore('sumgame', currentScore, config);
+        console.log('Score updated?', scoreUpdated);
     } else {
         // Fallback to local storage if ScoreManager is not available
-        const key = `sumGameHighScore_t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
-        const highScore = localStorage.getItem(key) || 0;
+        console.log('Parent ScoreManager not available, using localStorage fallback');
         
-        if (currentScore > parseInt(highScore)) {
-            localStorage.setItem(key, currentScore.toString());
-            scoreUpdated = true;
+        // Use the same storage format as the parent ScoreManager for consistency
+        const keyParent = 'sumGameHighScores';
+        const keyConfig = `t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
+        
+        try {
+            // Get existing scores or initialize new object
+            const scores = JSON.parse(localStorage.getItem(keyParent) || '{}');
+            const existingScore = scores[keyConfig] && scores[keyConfig].score ? scores[keyConfig].score : 0;
+            
+            console.log('Current high score for', keyConfig, ':', existingScore);
+            
+            if (currentScore > existingScore) {
+                // Update score in the same format as ScoreManager uses
+                scores[keyConfig] = {
+                    score: currentScore,
+                    config: config,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem(keyParent, JSON.stringify(scores));
+                scoreUpdated = true;
+                console.log('Updated high score in localStorage with new format');
+            }
+        } catch (e) {
+            // Fallback to the old format if there's an error
+            console.log('Error with new format, falling back to legacy format:', e);
+            
+            const key = `sumGameHighScore_t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
+            const highScore = localStorage.getItem(key) || 0;
+            
+            if (currentScore > parseInt(highScore)) {
+                localStorage.setItem(key, currentScore.toString());
+                scoreUpdated = true;
+                console.log('Updated high score in localStorage with legacy format');
+            }
         }
     }
     
