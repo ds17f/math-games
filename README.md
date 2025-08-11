@@ -14,6 +14,19 @@ Features:
 - Bias mechanism that helps you practice cards you find challenging
 - Responsive design that works on both desktop and mobile devices
 
+### Sum Game
+
+The Sum Game challenges your mental math skills. Drag your finger across numbered circles to add them up to match the target number.
+
+Features:
+- Interactive grid of numbers that you can drag across to select
+- Visual feedback for correct and incorrect sums
+- Configurable target number (5-20) and time limit (1-5 minutes)
+- Adjustable grid size (3x3 to 8x8) with default 6x6 grid to suit different screen sizes and difficulty preferences
+- Score tracking for successful matches
+- Automatic replacement of matched numbers with new ones
+- Responsive design that works on both desktop and mobile devices
+
 ## Directory Structure
 
 ```
@@ -22,9 +35,12 @@ dotgame/
 ├── server.js            # Express server
 ├── package.json         # Node.js package configuration
 ├── games/               # Directory containing all games
-│   └── dotgame/         # Dot Card Game files
-│       ├── index.html   # Dot Card Game UI
-│       └── script.js    # Dot Card Game logic
+│   ├── dotgame/         # Dot Card Game files
+│   │   ├── index.html   # Dot Card Game UI
+│   │   └── script.js    # Dot Card Game logic
+│   └── sumgame/         # Sum Game files
+│       ├── index.html   # Sum Game UI
+│       └── script.js    # Sum Game logic
 ├── app.py               # Alternative Flask server (deprecated)
 └── start.sh             # Flask startup script (deprecated)
 ```
@@ -111,3 +127,18 @@ The homepage provides a menu of all available games:
 - Click "Show Probability" to see the current probability distribution
 - Use "Reset Progress" to reset all card weights to default
 - Use the slider to adjust the display time from 1-10 seconds
+
+## Sum Game Usage
+
+- Click "Start Game" to begin playing
+- Drag your finger or mouse across numbered circles to select them
+- Try to make selections that add up exactly to the target number
+- When you lift your finger, the sum will be validated
+- If correct, the selected numbers will be replaced and your score increases
+- If incorrect, the selection will be cleared
+- The game ends when the timer runs out
+- Use settings to adjust:
+  - Game duration: 1-5 minutes
+  - Target number: 5-20
+  - Grid size: 3x3 to 8x8
+- Click "Reset Game" to start over

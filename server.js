@@ -19,6 +19,10 @@ app.get('/games/dotgame', (req, res) => {
   res.sendFile(path.join(__dirname, 'games', 'dotgame', 'index.html'));
 });
 
+app.get('/games/sumgame', (req, res) => {
+  res.sendFile(path.join(__dirname, 'games', 'sumgame', 'index.html'));
+});
+
 // Get local IP address
 function getLocalIP() {
   const networkInterfaces = os.networkInterfaces();

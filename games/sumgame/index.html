@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sum Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-top: 15px;
+            background-color: #f0f0f0;
+        }
+        
+        .header-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 50px;
+            margin-bottom: 10px;
+            padding: 0 20px;
+        }
+        
+        .back-link {
+            margin-right: 20px;
+            text-decoration: none;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .game-title {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: min(90vw, 600px); /* Responsive width */
+            margin: 10px auto;
+            flex-wrap: wrap; /* Allow wrapping on very small screens */
+        }
+
+        .target-display, .score-display, .timer-display {
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .target-display {
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .score-display {
+            color: #4CAF50;
+        }
+
+        .timer-display {
+            color: #F44336;
+        }
+
+        .current-sum {
+            margin: 10px auto;
+            padding: 10px;
+            font-size: clamp(24px, 4vw, 32px); /* Responsive font size */
+            font-weight: bold;
+            text-align: center;
+            color: #673AB7;
+            width: min(90vw, 600px); /* Responsive width */
+        }
+        
+        .grid-container {
+            width: min(80vw, 500px); /* Responsive width, max 500px */
+            height: min(80vw, 500px); /* Maintain square aspect ratio */
+            margin: 10px auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: min(2vw, 15px); /* Responsive gap */
+            padding: min(2vw, 15px); /* Responsive padding */
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            user-select: none; /* Prevent text selection during drag */
+            touch-action: none; /* Disable browser touch actions only inside the grid */
+            position: relative; /* Create a stacking context */
+            z-index: 1; /* Ensure proper stacking */
+        }
+        
+        .circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 5vw, 40px); /* Responsive font size */
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background-color 0.2s, opacity 0.5s ease;
+        }
+        
+        .circle.fading {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .circle.selected {
+            background-color: #2196F3;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .circle.correct {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .circle.incorrect {
+            background-color: #F44336;
+            color: white;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px auto;
+            width: min(90vw, 600px); /* Responsive width */
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: clamp(8px, 2vw, 15px) clamp(15px, 3vw, 25px); /* Responsive padding */
+            font-size: clamp(14px, 2vw, 18px); /* Responsive font size */
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            white-space: nowrap; /* Prevent text wrapping in buttons */
+        }
+        
+        .blue-btn {
+            background-color: #2196F3;
+        }
+        
+        .green-btn {
+            background-color: #4CAF50;
+        }
+        
+        .red-btn {
+            background-color: #F44336;
+        }
+        
+        .settings {
+            width: 100%;
+            padding: min(4vw, 20px); /* Responsive padding */
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        
+        .slider-container {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        /* Media Queries for larger screens */
+        @media (min-width: 768px) {
+            .header-container {
+                height: 60px;
+            }
+            
+            .game-title {
+                font-size: 28px;
+            }
+            
+            .target-display, .score-display, .timer-display {
+                padding: 15px;
+                font-size: 18px;
+            }
+            
+            .buttons {
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            /* Allow more room between settings on larger screens */
+            .slider-container {
+                margin: 15px 0;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            body {
+                padding-top: 25px;
+            }
+            
+            /* Potentially move controls to the side on very large screens */
+            .game-layout {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: flex-start;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .game-content {
+                flex: 1;
+                min-width: 500px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                flex: 1;
+                min-width: 300px;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <a href="/" class="back-link">&larr; Back to Games</a>
+        <h1 class="game-title">Sum Game</h1>
+    </div>
+    
+    <div class="game-layout">
+        <div class="game-content">
+            <div class="game-info">
+                <div class="target-display">Target: <span id="target-number">9</span></div>
+                <div class="score-display">Score: <span id="score">0</span></div>
+                <div class="timer-display">Time: <span id="time-left">2:00</span></div>
+            </div>
+            
+            <div class="current-sum" id="current-sum">Drag to Sum: 0</div>
+            
+            <div class="grid-container" id="grid-container">
+                <!-- Grid circles will be generated here by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="buttons">
+                <button id="start-btn" class="blue-btn">Start Game</button>
+                <button id="reset-btn" class="red-btn">Reset Game</button>
+            </div>
+            
+            <div class="settings">
+                <div class="slider-container">
+                    <label for="timer-slider">Game Duration (minutes): <span id="timer-value">2</span></label>
+                    <input type="range" id="timer-slider" min="1" max="5" value="2" step="1">
+                </div>
+                <div class="slider-container">
+                    <label for="target-slider">Target Number: <span id="target-value">9</span></label>
+                    <input type="range" id="target-slider" min="5" max="20" value="9" step="1">
+                </div>
+                <div class="slider-container">
+                    <label for="grid-size-slider">Grid Size: <span id="grid-size-value">6x6</span></label>
+                    <input type="range" id="grid-size-slider" min="3" max="8" value="6" step="1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
