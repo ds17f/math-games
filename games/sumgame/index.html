@@ -45,12 +45,17 @@
             flex-wrap: wrap; /* Allow wrapping on very small screens */
         }
 
-        .target-display, .score-display, .timer-display {
+        .target-display, .score-display, .timer-display, .high-score-display {
             padding: 10px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
+        }
+        
+        .high-score-display {
+            color: #9C27B0;
+            font-weight: bold;
         }
 
         .target-display {
@@ -273,6 +278,7 @@
                 <div class="target-display">Target: <span id="target-number">9</span></div>
                 <div class="score-display">Score: <span id="score">0</span></div>
                 <div class="timer-display">Time: <span id="time-left">2:00</span></div>
+                <div class="high-score-display">High Score: <span id="high-score">0</span></div>
             </div>
             
             <div class="current-sum" id="current-sum">Drag to Sum: 0</div>

@@ -3,6 +3,7 @@ const gridContainer = document.getElementById('grid-container');
 const targetNumberDisplay = document.getElementById('target-number');
 const scoreDisplay = document.getElementById('score');
 const timeLeftDisplay = document.getElementById('time-left');
+const highScoreDisplay = document.getElementById('high-score');
 const currentSumDisplay = document.getElementById('current-sum');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
@@ -548,14 +549,44 @@ function disableSettings(disabled) {
     gridSizeSlider.disabled = disabled;
 }
 
-// Save high score to localStorage
-function saveHighScore() {
-    const highScore = localStorage.getItem('sumGameHighScore') || 0;
-    
-    if (currentScore > highScore) {
-        localStorage.setItem('sumGameHighScore', currentScore);
-        alert(`New High Score: ${currentScore}!`);
+// Get current high score
+function getHighScore() {
+    // Try to get high score from parent ScoreManager first
+    if (window.parent && window.parent.ScoreManager) {
+        return window.parent.ScoreManager.getScore('sumgame') || 0;
+    } else {
+        // Fallback to localStorage
+        return parseInt(localStorage.getItem('sumGameHighScore') || '0');
     }
+}
+
+// Update high score display
+function updateHighScoreDisplay() {
+    const highScore = getHighScore();
+    highScoreDisplay.textContent = highScore;
+}
+
+// Save high score to localStorage using the ScoreManager if available
+function saveHighScore() {
+    // Check if ScoreManager exists (available from parent window)
+    if (window.parent && window.parent.ScoreManager) {
+        // Use ScoreManager from the parent window
+        const scoreUpdated = window.parent.ScoreManager.setScore('sumgame', currentScore);
+        if (scoreUpdated) {
+            alert(`New High Score: ${currentScore}!`);
+        }
+    } else {
+        // Fallback to local storage if ScoreManager is not available
+        const highScore = localStorage.getItem('sumGameHighScore') || 0;
+        
+        if (currentScore > parseInt(highScore)) {
+            localStorage.setItem('sumGameHighScore', currentScore);
+            alert(`New High Score: ${currentScore}!`);
+        }
+    }
+    
+    // Update the high score display
+    updateHighScoreDisplay();
 }
 
 // Initialize the game
@@ -563,6 +594,9 @@ function init() {
     initializeSettings();
     updateGridLayout(); // Set initial grid layout
     createGrid();
+    
+    // Update high score display
+    updateHighScoreDisplay();
     
     // Add button event listeners
     startBtn.addEventListener('click', startGame);

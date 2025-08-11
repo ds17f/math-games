@@ -102,6 +102,102 @@
             padding: 10px 0;
             font-size: 14px;
         }
+        
+        /* Leaderboard Styles */
+        .leaderboard-section {
+            margin-top: 40px;
+            width: 100%;
+        }
+        
+        .leaderboard-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .no-scores {
+            text-align: center;
+            padding: 20px;
+            color: #757575;
+            font-style: italic;
+        }
+        
+        .leaderboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+        }
+        
+        .game-score-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            width: calc(33.333% - 20px);
+            min-width: 200px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .game-score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .game-score-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        
+        .game-score-details {
+            font-size: 14px;
+            color: #757575;
+            margin: 5px 0;
+        }
+        
+        .game-score-controls {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .reset-button {
+            background-color: #F44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .reset-button:hover {
+            background-color: #D32F2F;
+        }
+        
+        .leaderboard-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-score-card {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -147,10 +243,174 @@
                 </div>
             </div>
         </div>
+        
+        <div class="leaderboard-section">
+            <h2>High Scores</h2>
+            <div class="leaderboard-container">
+                <div class="no-scores" id="no-scores-message">No high scores yet. Play some games to see your scores here!</div>
+                <div class="leaderboard" id="leaderboard">
+                    <!-- High scores will be dynamically added here by JavaScript -->
+                </div>
+                <div class="leaderboard-controls">
+                    <button id="reset-all-scores" class="reset-button">Reset All Scores</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <footer>
         <p>&copy; 2025 Brain Games - A learning project</p>
     </footer>
+
+    <script>
+        // High Score Management
+        const ScoreManager = {
+            // Define game IDs and their display information
+            gameConfig: {
+                'sumgame': {
+                    name: 'Sum Game',
+                    description: 'Mental Math Challenge',
+                    scoreType: 'points',
+                    storageKey: 'sumGameHighScore'
+                },
+                'dotgame': {
+                    name: 'Dot Game',
+                    description: 'Pattern Recognition',
+                    scoreType: 'n/a', // Currently doesn't have a score
+                    storageKey: 'dotGameHighScore'
+                }
+                // Add more games here as they are created
+            },
+            
+            // Get all high scores from localStorage
+            getAllScores: function() {
+                const scores = {};
+                
+                // Get scores for each configured game
+                for (const [gameId, config] of Object.entries(this.gameConfig)) {
+                    const scoreValue = localStorage.getItem(config.storageKey);
+                    scores[gameId] = scoreValue ? parseInt(scoreValue) : null;
+                }
+                
+                return scores;
+            },
+            
+            // Get high score for a specific game
+            getScore: function(gameId) {
+                const config = this.gameConfig[gameId];
+                if (!config) return null;
+                
+                const score = localStorage.getItem(config.storageKey);
+                return score ? parseInt(score) : null;
+            },
+            
+            // Set high score for a game (if higher than current)
+            setScore: function(gameId, score) {
+                const config = this.gameConfig[gameId];
+                if (!config) return false;
+                
+                const currentScore = this.getScore(gameId);
+                
+                // Only update if score is higher or there is no existing score
+                if (currentScore === null || score > currentScore) {
+                    localStorage.setItem(config.storageKey, score.toString());
+                    return true; // Score was updated
+                }
+                
+                return false; // Score was not higher
+            },
+            
+            // Reset score for a specific game
+            resetScore: function(gameId) {
+                const config = this.gameConfig[gameId];
+                if (!config) return false;
+                
+                localStorage.removeItem(config.storageKey);
+                return true;
+            },
+            
+            // Reset all scores
+            resetAllScores: function() {
+                for (const [gameId, config] of Object.entries(this.gameConfig)) {
+                    localStorage.removeItem(config.storageKey);
+                }
+                return true;
+            },
+            
+            // Format date string
+            formatDate: function(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+        };
+        
+        // Function to render the leaderboard
+        function renderLeaderboard() {
+            const leaderboardEl = document.getElementById('leaderboard');
+            const noScoresMessage = document.getElementById('no-scores-message');
+            const scores = ScoreManager.getAllScores();
+            
+            // Check if we have any scores
+            const hasScores = Object.values(scores).some(score => score !== null);
+            
+            // Toggle visibility based on whether we have scores
+            noScoresMessage.style.display = hasScores ? 'none' : 'block';
+            
+            // Clear current leaderboard
+            leaderboardEl.innerHTML = '';
+            
+            // If no scores, don't render anything else
+            if (!hasScores) return;
+            
+            // Create a card for each game with a score
+            for (const [gameId, gameScore] of Object.entries(scores)) {
+                if (gameScore === null) continue; // Skip games without scores
+                
+                const gameConfig = ScoreManager.gameConfig[gameId];
+                
+                // Create game score card
+                const scoreCard = document.createElement('div');
+                scoreCard.className = 'game-score-card';
+                
+                // Create card content
+                scoreCard.innerHTML = `
+                    <div class="game-score-header">
+                        <h3 class="game-score-title">${gameConfig.name}</h3>
+                    </div>
+                    <div class="score-value">${gameScore} ${gameConfig.scoreType}</div>
+                    <div class="game-score-details">${gameConfig.description}</div>
+                    <div class="game-score-controls">
+                        <button class="reset-button" data-game-id="${gameId}">Reset</button>
+                    </div>
+                `;
+                
+                leaderboardEl.appendChild(scoreCard);
+            }
+            
+            // Add event listeners to reset buttons
+            const resetButtons = document.querySelectorAll('.game-score-card .reset-button');
+            resetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const gameId = this.getAttribute('data-game-id');
+                    ScoreManager.resetScore(gameId);
+                    renderLeaderboard(); // Re-render the leaderboard
+                });
+            });
+        }
+        
+        // Initialize the leaderboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render the leaderboard
+            renderLeaderboard();
+            
+            // Add event listener for the reset all scores button
+            document.getElementById('reset-all-scores').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all high scores?')) {
+                    ScoreManager.resetAllScores();
+                    renderLeaderboard();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
