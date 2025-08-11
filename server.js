@@ -10,6 +10,15 @@ const PORT = 8000;
 // Serve static files from the current directory
 app.use(express.static(path.join(__dirname)));
 
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/games/dotgame', (req, res) => {
+  res.sendFile(path.join(__dirname, 'games', 'dotgame', 'index.html'));
+});
+
 // Get local IP address
 function getLocalIP() {
   const networkInterfaces = os.networkInterfaces();

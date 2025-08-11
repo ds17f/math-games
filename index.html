@@ -3,190 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dot Card Game</title>
+    <title>Brain Games</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            background-color: #f5f5f5;
             margin: 0;
-            background-color: #f0f0f0;
-        }
-        
-        .card-container {
-            width: 300px;
-            height: 450px;
-            margin: 20px;
-            position: relative;
-        }
-        
-        .dot-card {
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            position: absolute;
-            transition: opacity 0.3s ease;
-            padding: 20px;
-            box-sizing: border-box;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            grid-gap: 10px;
-        }
-        
-        .dot-card.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .dot {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #333;
-            margin: auto;
-        }
-        
-        /* Dot positions */
-        .dot-1 { grid-area: 2 / 2; } /* middle center */
-        
-        .dot-2-1 { grid-area: 1 / 1; } /* top left */
-        .dot-2-2 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-3-1 { grid-area: 1 / 1; } /* top left */
-        .dot-3-2 { grid-area: 2 / 2; } /* middle center */
-        .dot-3-3 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-4-1 { grid-area: 1 / 1; } /* top left */
-        .dot-4-2 { grid-area: 1 / 3; } /* top right */
-        .dot-4-3 { grid-area: 3 / 1; } /* bottom left */
-        .dot-4-4 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-5-1 { grid-area: 1 / 1; } /* top left */
-        .dot-5-2 { grid-area: 1 / 3; } /* top right */
-        .dot-5-3 { grid-area: 2 / 2; } /* middle center */
-        .dot-5-4 { grid-area: 3 / 1; } /* bottom left */
-        .dot-5-5 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-6-1 { grid-area: 1 / 1; } /* top left */
-        .dot-6-2 { grid-area: 1 / 3; } /* top right */
-        .dot-6-3 { grid-area: 2 / 1; } /* middle left */
-        .dot-6-4 { grid-area: 2 / 3; } /* middle right */
-        .dot-6-5 { grid-area: 3 / 1; } /* bottom left */
-        .dot-6-6 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-7-1 { grid-area: 1 / 1; } /* top left */
-        .dot-7-2 { grid-area: 1 / 3; } /* top right */
-        .dot-7-3 { grid-area: 2 / 1; } /* middle left */
-        .dot-7-4 { grid-area: 2 / 2; } /* middle center */
-        .dot-7-5 { grid-area: 2 / 3; } /* middle right */
-        .dot-7-6 { grid-area: 3 / 1; } /* bottom left */
-        .dot-7-7 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-8-1 { grid-area: 1 / 1; } /* top left */
-        .dot-8-2 { grid-area: 1 / 2; } /* top center */
-        .dot-8-3 { grid-area: 1 / 3; } /* top right */
-        .dot-8-4 { grid-area: 2 / 1; } /* middle left */
-        .dot-8-5 { grid-area: 2 / 3; } /* middle right */
-        .dot-8-6 { grid-area: 3 / 1; } /* bottom left */
-        .dot-8-7 { grid-area: 3 / 2; } /* bottom center */
-        .dot-8-8 { grid-area: 3 / 3; } /* bottom right */
-        
-        .dot-9-1 { grid-area: 1 / 1; } /* top left */
-        .dot-9-2 { grid-area: 1 / 2; } /* top center */
-        .dot-9-3 { grid-area: 1 / 3; } /* top right */
-        .dot-9-4 { grid-area: 2 / 1; } /* middle left */
-        .dot-9-5 { grid-area: 2 / 2; } /* middle center */
-        .dot-9-6 { grid-area: 2 / 3; } /* middle right */
-        .dot-9-7 { grid-area: 3 / 1; } /* bottom left */
-        .dot-9-8 { grid-area: 3 / 2; } /* bottom center */
-        .dot-9-9 { grid-area: 3 / 3; } /* bottom right */
-        
-        /* 9 dots in a 3x3 grid */
-        .dot-10-1 { grid-area: 1 / 1; } /* top left */
-        .dot-10-2 { grid-area: 1 / 2; } /* top center */
-        .dot-10-3 { grid-area: 1 / 3; } /* top right */
-        .dot-10-4 { grid-area: 2 / 1; } /* middle left */
-        .dot-10-5 { grid-area: 2 / 2; } /* middle center */
-        .dot-10-6 { grid-area: 2 / 3; } /* middle right */
-        .dot-10-7 { grid-area: 3 / 1; } /* bottom left */
-        .dot-10-8 { grid-area: 3 / 2; } /* bottom center */
-        .dot-10-9 { grid-area: 3 / 3; } /* bottom right */
-        /* 10th dot below the grid */
-        .dot-10-10 { grid-area: 4 / 2; } /* extra bottom center */
-        
-        /* Make the card taller to accommodate the 10th dot */
-        .dot-card.pattern-10 {
-            grid-template-rows: repeat(4, 1fr);
-        }
-        
-        .controls {
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 20px;
-            width: 300px;
+            min-height: 100vh;
         }
         
-        .buttons {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
+        header {
+            background-color: #2196F3;
             color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        .slider-container {
             width: 100%;
             text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         
-        input[type="range"] {
-            width: 80%;
-            margin: 10px 0;
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
         }
         
-        .timer-display {
-            font-size: 24px;
-            margin: 10px 0;
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .game-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .game-image {
+            height: 150px;
+            background-color: #e0f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .game-info {
+            padding: 15px;
+        }
+        
+        .game-title {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .game-description {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .play-button {
+            display: block;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        footer {
+            margin-top: auto;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>Dot Card Game</h1>
+    <header>
+        <h1>Brain Games</h1>
+        <p>A collection of fun cognitive games to challenge your mind</p>
+    </header>
     
-    <div class="card-container">
-        <div id="dot-card" class="dot-card hidden"></div>
+    <div class="container">
+        <h2>Select a Game</h2>
+        
+        <div class="game-grid">
+            <div class="game-card">
+                <div class="game-image">
+                    <div style="font-size: 60px; font-weight: bold;">•••</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Dot Game</h3>
+                    <p class="game-description">Test your ability to quickly recognize dot patterns. Improve your subitizing skills!</p>
+                    <a href="/games/dotgame/index.html" class="play-button">Play Now</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-image">
+                    <div style="font-size: 30px; opacity: 0.5;">Coming Soon</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Memory Match</h3>
+                    <p class="game-description">Find matching pairs and test your memory skills. Coming soon!</p>
+                    <a href="#" class="play-button" style="background-color: #9E9E9E;">Coming Soon</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-image">
+                    <div style="font-size: 30px; opacity: 0.5;">Coming Soon</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Number Sequence</h3>
+                    <p class="game-description">Find the pattern and complete the sequence. Coming soon!</p>
+                    <a href="#" class="play-button" style="background-color: #9E9E9E;">Coming Soon</a>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div class="controls">
-        <div class="buttons">
-            <button id="next-btn">Show Next Card</button>
-            <button id="show-again-btn">Show Again</button>
-        </div>
-        
-        <div class="slider-container">
-            <label for="timer-slider">Display Time (seconds): <span id="timer-value">2</span></label>
-            <input type="range" id="timer-slider" min="1" max="10" value="2" step="1">
-        </div>
-        
-        <div class="timer-display" id="timer-display"></div>
-    </div>
-    
-    <script src="script.js"></script>
+    <footer>
+        <p>&copy; 2025 Brain Games - A learning project</p>
+    </footer>
 </body>
 </html>
