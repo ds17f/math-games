@@ -189,8 +189,23 @@
         
         .leaderboard-controls {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
             margin-top: 20px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-dropdown {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 14px;
         }
         
         @media (max-width: 768px) {
@@ -252,6 +267,19 @@
                     <!-- High scores will be dynamically added here by JavaScript -->
                 </div>
                 <div class="leaderboard-controls">
+                    <div class="filter-controls">
+                        <label for="game-filter">Game:</label>
+                        <select id="game-filter" class="filter-dropdown">
+                            <option value="all">All Games</option>
+                            <!-- Games will be added dynamically -->
+                        </select>
+                        
+                        <label for="config-filter" id="config-filter-label" style="display: none;">Config:</label>
+                        <select id="config-filter" class="filter-dropdown" style="display: none;">
+                            <option value="all">All Configurations</option>
+                            <!-- Configurations will be added dynamically -->
+                        </select>
+                    </div>
                     <button id="reset-all-scores" class="reset-button">Reset All Scores</button>
                 </div>
             </div>
@@ -271,7 +299,8 @@
                     name: 'Sum Game',
                     description: 'Mental Math Challenge',
                     scoreType: 'points',
-                    storageKey: 'sumGameHighScore'
+                    storageKey: 'sumGameHighScores', // Note: now plural as it stores multiple scores
+                    configParams: ['targetNumber', 'gridSize', 'timeLimit']
                 },
                 'dotgame': {
                     name: 'Dot Game',
@@ -288,30 +317,124 @@
                 
                 // Get scores for each configured game
                 for (const [gameId, config] of Object.entries(this.gameConfig)) {
-                    const scoreValue = localStorage.getItem(config.storageKey);
-                    scores[gameId] = scoreValue ? parseInt(scoreValue) : null;
+                    if (this.usesDetailedScores(gameId)) {
+                        scores[gameId] = this.getDetailedScores(gameId);
+                    } else {
+                        const scoreValue = localStorage.getItem(config.storageKey);
+                        scores[gameId] = scoreValue ? parseInt(scoreValue) : null;
+                    }
                 }
                 
                 return scores;
             },
             
-            // Get high score for a specific game
-            getScore: function(gameId) {
-                const config = this.gameConfig[gameId];
-                if (!config) return null;
-                
-                const score = localStorage.getItem(config.storageKey);
-                return score ? parseInt(score) : null;
-            },
-            
-            // Set high score for a game (if higher than current)
-            setScore: function(gameId, score) {
+            // Check if game uses detailed score tracking
+            usesDetailedScores: function(gameId) {
                 const config = this.gameConfig[gameId];
                 if (!config) return false;
                 
+                return !!config.configParams && config.configParams.length > 0;
+            },
+            
+            // Get all detailed scores for a game
+            getDetailedScores: function(gameId) {
+                const config = this.gameConfig[gameId];
+                if (!config) return null;
+                
+                const storedScores = localStorage.getItem(config.storageKey);
+                if (!storedScores) return null;
+                
+                try {
+                    return JSON.parse(storedScores);
+                } catch (e) {
+                    console.error('Failed to parse stored scores:', e);
+                    return null;
+                }
+            },
+            
+            // Generate a unique configuration key
+            getConfigKey: function(gameId, configOptions) {
+                const config = this.gameConfig[gameId];
+                if (!config || !config.configParams) return null;
+                
+                // Create a key based on configuration parameters
+                // e.g., "target9_grid6_time2"
+                return config.configParams
+                    .map(param => {
+                        const value = configOptions[param];
+                        return value !== undefined ? `${param}${value}` : '';
+                    })
+                    .filter(Boolean)
+                    .join('_');
+            },
+            
+            // Get best score for a specific game configuration
+            getScore: function(gameId, configOptions = {}) {
+                const config = this.gameConfig[gameId];
+                if (!config) return null;
+                
+                // For games with detailed scoring
+                if (this.usesDetailedScores(gameId)) {
+                    const scores = this.getDetailedScores(gameId);
+                    if (!scores) return null;
+                    
+                    // If configuration options provided, get specific score
+                    if (Object.keys(configOptions).length > 0) {
+                        const configKey = this.getConfigKey(gameId, configOptions);
+                        return configKey && scores[configKey] ? scores[configKey].score : null;
+                    }
+                    
+                    // Otherwise, find the best score across all configurations
+                    let bestScore = null;
+                    
+                    for (const scoreData of Object.values(scores)) {
+                        if (bestScore === null || scoreData.score > bestScore) {
+                            bestScore = scoreData.score;
+                        }
+                    }
+                    
+                    return bestScore;
+                }
+                
+                // For games with simple scoring
+                const scoreValue = localStorage.getItem(config.storageKey);
+                return scoreValue ? parseInt(scoreValue) : null;
+            },
+            
+            // Set high score for a game (if higher than current)
+            setScore: function(gameId, score, configOptions = {}) {
+                const config = this.gameConfig[gameId];
+                if (!config) return false;
+                
+                // For games with detailed scoring
+                if (this.usesDetailedScores(gameId) && Object.keys(configOptions).length > 0) {
+                    const configKey = this.getConfigKey(gameId, configOptions);
+                    if (!configKey) return false;
+                    
+                    // Get existing scores or initialize new object
+                    const scores = this.getDetailedScores(gameId) || {};
+                    
+                    // Check if new score is better than existing score for this configuration
+                    const existingData = scores[configKey];
+                    
+                    if (!existingData || score > existingData.score) {
+                        // Store score with configuration and timestamp
+                        scores[configKey] = {
+                            score: score,
+                            config: {...configOptions},
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        localStorage.setItem(config.storageKey, JSON.stringify(scores));
+                        return true; // Score was updated
+                    }
+                    
+                    return false; // Score was not higher
+                }
+                
+                // For games with simple scoring
                 const currentScore = this.getScore(gameId);
                 
-                // Only update if score is higher or there is no existing score
                 if (currentScore === null || score > currentScore) {
                     localStorage.setItem(config.storageKey, score.toString());
                     return true; // Score was updated
@@ -321,11 +444,28 @@
             },
             
             // Reset score for a specific game
-            resetScore: function(gameId) {
+            resetScore: function(gameId, configKey = null) {
                 const config = this.gameConfig[gameId];
                 if (!config) return false;
                 
-                localStorage.removeItem(config.storageKey);
+                // For games with detailed scoring
+                if (this.usesDetailedScores(gameId)) {
+                    // If configKey provided, only reset that specific configuration
+                    if (configKey) {
+                        const scores = this.getDetailedScores(gameId);
+                        if (scores && scores[configKey]) {
+                            delete scores[configKey];
+                            localStorage.setItem(config.storageKey, JSON.stringify(scores));
+                        }
+                    } else {
+                        // Reset all scores for this game
+                        localStorage.removeItem(config.storageKey);
+                    }
+                } else {
+                    // For games with simple scoring
+                    localStorage.removeItem(config.storageKey);
+                }
+                
                 return true;
             },
             
@@ -341,61 +481,277 @@
             formatDate: function(dateString) {
                 const date = new Date(dateString);
                 return date.toLocaleDateString();
+            },
+            
+            // Format configuration for display
+            formatConfig: function(gameId, configData) {
+                const config = this.gameConfig[gameId];
+                if (!config) return '';
+                
+                switch (gameId) {
+                    case 'sumgame':
+                        return `Target: ${configData.targetNumber}, Grid: ${configData.gridSize}×${configData.gridSize}, Time: ${configData.timeLimit}min`;
+                    default:
+                        return Object.entries(configData)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join(', ');
+                }
             }
         };
         
         // Function to render the leaderboard
-        function renderLeaderboard() {
+        function renderLeaderboard(gameFilter = 'all', configFilter = 'all') {
             const leaderboardEl = document.getElementById('leaderboard');
             const noScoresMessage = document.getElementById('no-scores-message');
             const scores = ScoreManager.getAllScores();
             
             // Check if we have any scores
-            const hasScores = Object.values(scores).some(score => score !== null);
+            let hasAnyScores = false;
+            for (const gameId in scores) {
+                const gameScores = scores[gameId];
+                if (gameScores !== null && (typeof gameScores === 'object' ? Object.keys(gameScores).length > 0 : true)) {
+                    hasAnyScores = true;
+                    break;
+                }
+            }
             
             // Toggle visibility based on whether we have scores
-            noScoresMessage.style.display = hasScores ? 'none' : 'block';
+            noScoresMessage.style.display = hasAnyScores ? 'none' : 'block';
             
             // Clear current leaderboard
             leaderboardEl.innerHTML = '';
             
             // If no scores, don't render anything else
-            if (!hasScores) return;
+            if (!hasAnyScores) return;
             
-            // Create a card for each game with a score
-            for (const [gameId, gameScore] of Object.entries(scores)) {
-                if (gameScore === null) continue; // Skip games without scores
+            // Create a card for each game with scores
+            for (const [gameId, gameScores] of Object.entries(scores)) {
+                if (gameScores === null) continue; // Skip games without scores
+                
+                // Apply game filter
+                if (gameFilter !== 'all' && gameId !== gameFilter) continue;
                 
                 const gameConfig = ScoreManager.gameConfig[gameId];
+                const usesDetailedScores = ScoreManager.usesDetailedScores(gameId);
                 
-                // Create game score card
-                const scoreCard = document.createElement('div');
-                scoreCard.className = 'game-score-card';
+                // Skip if we have an empty object for detailed scores
+                if (usesDetailedScores && Object.keys(gameScores).length === 0) continue;
                 
-                // Create card content
-                scoreCard.innerHTML = `
-                    <div class="game-score-header">
+                if (usesDetailedScores) {
+                    // For games with detailed configuration scores
+                    let filteredScores = Object.entries(gameScores)
+                        .map(([configKey, scoreData]) => ({
+                            configKey,
+                            ...scoreData
+                        }));
+                    
+                    // Apply configuration filter if specified
+                    if (configFilter !== 'all') {
+                        filteredScores = filteredScores.filter(item => {
+                            // For sumgame, filter by specific configuration parameters
+                            if (gameId === 'sumgame') {
+                                const [paramName, paramValue] = configFilter.split(':');
+                                return item.config[paramName] == paramValue; // Use loose equality for string/number comparison
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    const topScores = filteredScores
+                        .sort((a, b) => b.score - a.score) // Sort by score (highest first)
+                        .slice(0, 3); // Take top 3 scores
+                    
+                    // Create game score card
+                    const scoreCard = document.createElement('div');
+                    scoreCard.className = 'game-score-card';
+                    
+                    // Create card header
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'game-score-header';
+                    cardHeader.innerHTML = `
                         <h3 class="game-score-title">${gameConfig.name}</h3>
-                    </div>
-                    <div class="score-value">${gameScore} ${gameConfig.scoreType}</div>
-                    <div class="game-score-details">${gameConfig.description}</div>
-                    <div class="game-score-controls">
-                        <button class="reset-button" data-game-id="${gameId}">Reset</button>
-                    </div>
-                `;
-                
-                leaderboardEl.appendChild(scoreCard);
+                    `;
+                    scoreCard.appendChild(cardHeader);
+                    
+                    // Create card content
+                    const scoresList = document.createElement('div');
+                    scoresList.className = 'scores-list';
+                    
+                    // Add each configuration score
+                    topScores.forEach(scoreData => {
+                        const scoreItem = document.createElement('div');
+                        scoreItem.className = 'score-item';
+                        
+                        scoreItem.innerHTML = `
+                            <div class="score-value">${scoreData.score} ${gameConfig.scoreType}</div>
+                            <div class="score-config">${ScoreManager.formatConfig(gameId, scoreData.config)}</div>
+                            <div class="score-date">${ScoreManager.formatDate(scoreData.timestamp)}</div>
+                            <button class="reset-button small" data-game-id="${gameId}" data-config-key="${scoreData.configKey}">×</button>
+                        `;
+                        
+                        scoresList.appendChild(scoreItem);
+                    });
+                    
+                    // Add scores list to card
+                    scoreCard.appendChild(scoresList);
+                    
+                    // Add description and reset button
+                    scoreCard.innerHTML += `
+                        <div class="game-score-details">${gameConfig.description}</div>
+                        <div class="game-score-controls">
+                            <button class="reset-button" data-game-id="${gameId}">Reset All</button>
+                        </div>
+                    `;
+                    
+                    leaderboardEl.appendChild(scoreCard);
+                } else {
+                    // For games with simple scoring
+                    // Create game score card
+                    const scoreCard = document.createElement('div');
+                    scoreCard.className = 'game-score-card';
+                    
+                    // Create card content
+                    scoreCard.innerHTML = `
+                        <div class="game-score-header">
+                            <h3 class="game-score-title">${gameConfig.name}</h3>
+                        </div>
+                        <div class="score-value">${gameScores} ${gameConfig.scoreType}</div>
+                        <div class="game-score-details">${gameConfig.description}</div>
+                        <div class="game-score-controls">
+                            <button class="reset-button" data-game-id="${gameId}">Reset</button>
+                        </div>
+                    `;
+                    
+                    leaderboardEl.appendChild(scoreCard);
+                }
             }
             
             // Add event listeners to reset buttons
-            const resetButtons = document.querySelectorAll('.game-score-card .reset-button');
+            const resetButtons = document.querySelectorAll('.game-score-card .reset-button:not(.small)');
             resetButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const gameId = this.getAttribute('data-game-id');
-                    ScoreManager.resetScore(gameId);
+                    if (confirm(`Are you sure you want to reset all scores for ${ScoreManager.gameConfig[gameId].name}?`)) {
+                        ScoreManager.resetScore(gameId);
+                        renderLeaderboard(); // Re-render the leaderboard
+                    }
+                });
+            });
+            
+            // Add event listeners to individual score reset buttons
+            const smallResetButtons = document.querySelectorAll('.game-score-card .reset-button.small');
+            smallResetButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const gameId = this.getAttribute('data-game-id');
+                    const configKey = this.getAttribute('data-config-key');
+                    ScoreManager.resetScore(gameId, configKey);
                     renderLeaderboard(); // Re-render the leaderboard
                 });
             });
+        }
+        
+        // Populate filter dropdowns
+        function populateFilters() {
+            const scores = ScoreManager.getAllScores();
+            const gameFilter = document.getElementById('game-filter');
+            const configFilter = document.getElementById('config-filter');
+            const configFilterLabel = document.getElementById('config-filter-label');
+            
+            // Clear existing options except the first one
+            while (gameFilter.options.length > 1) {
+                gameFilter.remove(1);
+            }
+            
+            // Add games with scores to the filter
+            for (const [gameId, gameScores] of Object.entries(scores)) {
+                if (gameScores === null || (typeof gameScores === 'object' && Object.keys(gameScores).length === 0)) continue;
+                
+                const option = document.createElement('option');
+                option.value = gameId;
+                option.textContent = ScoreManager.gameConfig[gameId].name;
+                gameFilter.appendChild(option);
+            }
+            
+            // Update configuration filter based on selected game
+            function updateConfigFilter() {
+                const selectedGame = gameFilter.value;
+                
+                // Hide config filter by default
+                configFilter.style.display = 'none';
+                configFilterLabel.style.display = 'none';
+                
+                // Clear existing options except the first one
+                while (configFilter.options.length > 1) {
+                    configFilter.remove(1);
+                }
+                
+                // Only show config filter for games with detailed scores
+                if (selectedGame !== 'all' && ScoreManager.usesDetailedScores(selectedGame)) {
+                    const gameScores = scores[selectedGame];
+                    if (!gameScores) return;
+                    
+                    // For sumgame, create filter options based on the configurations
+                    if (selectedGame === 'sumgame') {
+                        // Get unique configuration values
+                        const configOptions = {
+                            targetNumber: new Set(),
+                            gridSize: new Set(),
+                            timeLimit: new Set()
+                        };
+                        
+                        // Collect all unique values for each configuration parameter
+                        Object.values(gameScores).forEach(scoreData => {
+                            if (scoreData.config) {
+                                for (const [key, value] of Object.entries(scoreData.config)) {
+                                    if (configOptions[key]) {
+                                        configOptions[key].add(value);
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // Add filter options for each parameter
+                        for (const [param, values] of Object.entries(configOptions)) {
+                            if (values.size > 0) {
+                                // Add option group
+                                const group = document.createElement('optgroup');
+                                group.label = param === 'targetNumber' ? 'Target' : 
+                                              param === 'gridSize' ? 'Grid Size' : 'Time Limit';
+                                
+                                // Add sorted options
+                                Array.from(values).sort((a, b) => a - b).forEach(value => {
+                                    const option = document.createElement('option');
+                                    option.value = `${param}:${value}`;
+                                    option.textContent = param === 'gridSize' ? `${value}×${value}` : 
+                                                        param === 'timeLimit' ? `${value} min` : value;
+                                    group.appendChild(option);
+                                });
+                                
+                                configFilter.appendChild(group);
+                            }
+                        }
+                        
+                        // Show config filter if we have options
+                        if (configFilter.options.length > 1) {
+                            configFilter.style.display = '';
+                            configFilterLabel.style.display = '';
+                        }
+                    }
+                }
+                
+                // Re-render the leaderboard with the selected filters
+                renderLeaderboard(selectedGame, configFilter.value);
+            }
+            
+            // Add event listeners to filters
+            gameFilter.addEventListener('change', updateConfigFilter);
+            configFilter.addEventListener('change', function() {
+                renderLeaderboard(gameFilter.value, configFilter.value);
+            });
+            
+            // Initialize config filter based on current game selection
+            updateConfigFilter();
         }
         
         // Initialize the leaderboard
@@ -403,11 +759,15 @@
             // Render the leaderboard
             renderLeaderboard();
             
+            // Populate filter dropdowns
+            populateFilters();
+            
             // Add event listener for the reset all scores button
             document.getElementById('reset-all-scores').addEventListener('click', function() {
                 if (confirm('Are you sure you want to reset all high scores?')) {
                     ScoreManager.resetAllScores();
                     renderLeaderboard();
+                    populateFilters(); // Update filters after resetting scores
                 }
             });
         });

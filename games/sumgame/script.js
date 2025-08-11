@@ -44,6 +44,7 @@ function initializeSettings() {
         timerSeconds = timerMinutes * 60;
         updateTimerDisplay();
         saveSettings();
+        updateHighScoreDisplay(); // Update high score display for new settings
     });
     
     targetSlider.addEventListener('input', () => {
@@ -51,6 +52,7 @@ function initializeSettings() {
         targetValue.textContent = targetNumber;
         targetNumberDisplay.textContent = targetNumber;
         saveSettings();
+        updateHighScoreDisplay(); // Update high score display for new settings
         
         // Regenerate grid if game is not active
         if (!gameActive) {
@@ -67,6 +69,9 @@ function initializeSettings() {
         
         // Save settings
         saveSettings();
+        
+        // Update high score display for new settings
+        updateHighScoreDisplay();
         
         // Regenerate grid if game is not active
         if (!gameActive) {
@@ -173,17 +178,20 @@ function startDrag(e) {
     selectedCircles = [];
     currentSum = 0;
     
-    // Clear any previously selected circles
-    clearSelection();
+    // Clear selection class but don't affect circles being processed
+    clearSelectionClass();
     
     // Add this circle to selection
     const circle = e.target;
     if (circle.classList.contains('circle')) {
-        circle.classList.add('selected');
-        selectedCircles.push(circle);
-        currentSum += parseInt(circle.textContent);
-        updateCurrentSumDisplay();
-        lastTouchedCircle = circle;
+        // Only select if the circle isn't currently in a fading state
+        if (!circle.classList.contains('fading')) {
+            circle.classList.add('selected');
+            selectedCircles.push(circle);
+            currentSum += parseInt(circle.textContent);
+            updateCurrentSumDisplay();
+            lastTouchedCircle = circle;
+        }
     }
 }
 
@@ -193,8 +201,11 @@ function continueDrag(e) {
     
     const circle = e.target;
     
-    // Only select if it's a circle and not already selected
-    if (circle.classList.contains('circle') && !selectedCircles.includes(circle)) {
+    // Only select if it's a circle, not already selected, and not fading
+    if (circle.classList.contains('circle') && 
+        !selectedCircles.includes(circle) && 
+        !circle.classList.contains('fading')) {
+        
         circle.classList.add('selected');
         selectedCircles.push(circle);
         currentSum += parseInt(circle.textContent);
@@ -218,12 +229,17 @@ function handleTouch(e) {
     const circle = document.elementFromPoint(touch.clientX, touch.clientY);
     
     if (circle && circle.classList.contains('circle')) {
+        // Don't select circles that are in transition
+        if (circle.classList.contains('fading')) {
+            return;
+        }
+        
         isDragging = true;
         selectedCircles = [];
         currentSum = 0;
         
-        // Clear any previously selected circles
-        clearSelection();
+        // Clear selection class but don't affect circles being processed
+        clearSelectionClass();
         
         // Add this circle to selection
         circle.classList.add('selected');
@@ -248,7 +264,11 @@ function handleTouchMove(e) {
     const touch = e.touches[0];
     const circle = document.elementFromPoint(touch.clientX, touch.clientY);
     
-    if (circle && circle.classList.contains('circle') && !selectedCircles.includes(circle)) {
+    if (circle && 
+        circle.classList.contains('circle') && 
+        !selectedCircles.includes(circle) && 
+        !circle.classList.contains('fading')) {
+        
         circle.classList.add('selected');
         selectedCircles.push(circle);
         currentSum += parseInt(circle.textContent);
@@ -266,11 +286,20 @@ function endDrag(e) {
     
     if (!gameActive || !wasDragging) return;
     
+    // Create a local copy of the current selection
+    const currentSelection = [...selectedCircles];
+    const currentSelectionSum = currentSum;
+    
+    // Clear the global selection state to allow new selections immediately
+    selectedCircles = [];
+    currentSum = 0;
+    updateCurrentSumDisplay();
+    
     // Check if sum matches target
-    if (currentSum === targetNumber) {
-        handleCorrectSum();
+    if (currentSelectionSum === targetNumber) {
+        handleCorrectSum(currentSelection);
     } else {
-        handleIncorrectSum();
+        handleIncorrectSum(currentSelection);
     }
     
     // Ensure touch events don't affect anything else
@@ -279,7 +308,15 @@ function endDrag(e) {
     }
 }
 
-// Clear selection
+// Clear all selection classes
+function clearSelectionClass() {
+    const circles = document.querySelectorAll('.circle.selected');
+    circles.forEach(circle => {
+        circle.classList.remove('selected');
+    });
+}
+
+// Clear all selection states
 function clearSelection() {
     const circles = document.querySelectorAll('.circle');
     circles.forEach(circle => {
@@ -295,11 +332,17 @@ function updateCurrentSumDisplay() {
 }
 
 // Handle correct sum
-function handleCorrectSum() {
+function handleCorrectSum(circlesToHandle) {
     // Visual feedback
-    selectedCircles.forEach(circle => {
+    circlesToHandle.forEach(circle => {
         circle.classList.add('correct');
         circle.classList.remove('selected');
+    });
+    
+    // Mark each circle with a unique ID to track it through the replacement process
+    const processId = Date.now() + '-' + Math.floor(Math.random() * 1000);
+    circlesToHandle.forEach(circle => {
+        circle.dataset.processId = processId;
     });
     
     // Update score
@@ -308,51 +351,78 @@ function handleCorrectSum() {
     
     // Wait a moment to show the correct state
     setTimeout(() => {
-        // Add fading animation
-        selectedCircles.forEach(circle => {
-            circle.classList.add('fading');
+        // Find the circles that are still in the DOM with our process ID
+        const circlesStillInDom = [];
+        circlesToHandle.forEach(circle => {
+            // Verify the circle is still in the DOM and has our process ID
+            if (document.body.contains(circle) && circle.dataset.processId === processId) {
+                circlesStillInDom.push(circle);
+                circle.classList.add('fading');
+            }
         });
         
         // Wait for the fade animation to complete before replacing
         setTimeout(() => {
-            replaceCircles(selectedCircles);
-            currentSum = 0;
-            updateCurrentSumDisplay();
+            replaceCircles(circlesStillInDom, processId);
         }, 500); // Match this timing with the CSS transition duration
     }, 500);
 }
 
 // Handle incorrect sum
-function handleIncorrectSum() {
-    // Visual feedback
-    selectedCircles.forEach(circle => {
+function handleIncorrectSum(circlesToHandle) {
+    // Mark circles with a unique process ID
+    const processId = Date.now() + '-' + Math.floor(Math.random() * 1000);
+    circlesToHandle.forEach(circle => {
+        circle.dataset.processId = processId;
         circle.classList.add('incorrect');
         circle.classList.remove('selected');
     });
     
     // Reset after a moment
     setTimeout(() => {
-        clearSelection();
-        currentSum = 0;
-        updateCurrentSumDisplay();
+        // Find circles that still have our process ID
+        circlesToHandle.forEach(circle => {
+            if (document.body.contains(circle) && circle.dataset.processId === processId) {
+                circle.classList.remove('incorrect');
+                // Remove the process ID
+                delete circle.dataset.processId;
+            }
+        });
     }, 500);
 }
 
 // Replace circles with new ones
-function replaceCircles(circlesToReplace) {
+function replaceCircles(circlesToReplace, processId) {
+    // Make sure we have valid circles to replace
+    if (!circlesToReplace.length) return;
+    
+    // Get all current circles to read their values
     const allCircles = document.querySelectorAll('.circle');
     const currentGridNumbers = Array.from(allCircles).map(circle => parseInt(circle.textContent));
     
-    // Get indices of circles to replace
-    const replaceIndices = Array.from(circlesToReplace).map(circle => 
-        parseInt(circle.dataset.index)
-    );
+    // Get indices of circles to replace, filtering out invalid ones
+    const replaceIndices = [];
+    const validCircles = [];
+    
+    circlesToReplace.forEach(circle => {
+        // Double-check the circle is still valid and matches our process ID
+        if (document.body.contains(circle) && 
+            circle.dataset.processId === processId &&
+            !isNaN(parseInt(circle.dataset.index))) {
+            
+            replaceIndices.push(parseInt(circle.dataset.index));
+            validCircles.push(circle);
+        }
+    });
+    
+    // Make sure we have valid indices to replace
+    if (!replaceIndices.length) return;
     
     // Create new valid path that includes at least one of the replaced circles
     ensureValidPathExists(currentGridNumbers, replaceIndices);
     
     // Update the circles with new numbers
-    circlesToReplace.forEach((circle, i) => {
+    validCircles.forEach((circle, i) => {
         const index = parseInt(circle.dataset.index);
         
         // Reset the circle's appearance
@@ -364,6 +434,9 @@ function replaceCircles(circlesToReplace) {
         circle.classList.remove('incorrect');
         circle.classList.remove('selected');
         circle.classList.remove('fading');
+        
+        // Remove the process ID
+        delete circle.dataset.processId;
         
         // Force a reflow to make the transition work
         void circle.offsetWidth;
@@ -549,40 +622,69 @@ function disableSettings(disabled) {
     gridSizeSlider.disabled = disabled;
 }
 
-// Get current high score
+// Get current configuration
+function getCurrentConfig() {
+    return {
+        targetNumber: targetNumber,
+        gridSize: gridSize,
+        timeLimit: timerMinutes
+    };
+}
+
+// Get current high score for this configuration
 function getHighScore() {
+    const config = getCurrentConfig();
+    
     // Try to get high score from parent ScoreManager first
     if (window.parent && window.parent.ScoreManager) {
-        return window.parent.ScoreManager.getScore('sumgame') || 0;
+        return window.parent.ScoreManager.getScore('sumgame', config) || 0;
     } else {
-        // Fallback to localStorage
-        return parseInt(localStorage.getItem('sumGameHighScore') || '0');
+        // Fallback to localStorage with a simple key format
+        const key = `sumGameHighScore_t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
+        return parseInt(localStorage.getItem(key) || '0');
+    }
+}
+
+// Get high score text for display
+function getHighScoreText() {
+    const highScore = getHighScore();
+    const config = getCurrentConfig();
+    
+    if (highScore > 0) {
+        return `${highScore} (for current settings)`;
+    } else {
+        return '0';
     }
 }
 
 // Update high score display
 function updateHighScoreDisplay() {
-    const highScore = getHighScore();
-    highScoreDisplay.textContent = highScore;
+    highScoreDisplay.textContent = getHighScoreText();
 }
 
 // Save high score to localStorage using the ScoreManager if available
 function saveHighScore() {
+    const config = getCurrentConfig();
+    let scoreUpdated = false;
+    
     // Check if ScoreManager exists (available from parent window)
     if (window.parent && window.parent.ScoreManager) {
         // Use ScoreManager from the parent window
-        const scoreUpdated = window.parent.ScoreManager.setScore('sumgame', currentScore);
-        if (scoreUpdated) {
-            alert(`New High Score: ${currentScore}!`);
-        }
+        scoreUpdated = window.parent.ScoreManager.setScore('sumgame', currentScore, config);
     } else {
         // Fallback to local storage if ScoreManager is not available
-        const highScore = localStorage.getItem('sumGameHighScore') || 0;
+        const key = `sumGameHighScore_t${config.targetNumber}_g${config.gridSize}_m${config.timeLimit}`;
+        const highScore = localStorage.getItem(key) || 0;
         
         if (currentScore > parseInt(highScore)) {
-            localStorage.setItem('sumGameHighScore', currentScore);
-            alert(`New High Score: ${currentScore}!`);
+            localStorage.setItem(key, currentScore.toString());
+            scoreUpdated = true;
         }
+    }
+    
+    // Show message if high score was updated
+    if (scoreUpdated) {
+        alert(`New High Score for current settings: ${currentScore}!`);
     }
     
     // Update the high score display
