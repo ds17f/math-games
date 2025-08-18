@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Bonds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-top: 15px;
+            background-color: #f0f0f0;
+        }
+        
+        .header-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 50px;
+            margin-bottom: 10px;
+            padding: 0 20px;
+        }
+        
+        .back-link {
+            margin-right: 20px;
+            text-decoration: none;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .game-title {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .game-container {
+            width: min(90vw, 500px);
+            margin: 20px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bonds-visual {
+            position: relative;
+            width: 300px;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .bonds-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .bond-line {
+            stroke: #666;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .number-circle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        .top-circle {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .left-circle {
+            bottom: 0;
+            left: 20px;
+        }
+
+        .right-circle {
+            bottom: 0;
+            right: 20px;
+        }
+
+        .input-circle {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 3px solid #2196F3;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .input-circle:hover {
+            background-color: #e3f2fd;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .right-circle.input-circle:hover {
+            transform: scale(1.05);
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .keyboard-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .key {
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #333;
+        }
+
+        .key:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .key:active {
+            transform: translateY(0);
+            background-color: #c0c0c0;
+        }
+
+        .key.enter-btn {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+        }
+
+        .key.enter-btn:hover {
+            background-color: #45a049;
+        }
+
+        .key.clear-btn {
+            background-color: #F44336;
+            color: white;
+            font-size: 18px;
+        }
+
+        .key.clear-btn:hover {
+            background-color: #da190b;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: transform 0.1s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .blue-btn {
+            background-color: #2196F3;
+        }
+
+        .green-btn {
+            background-color: #4CAF50;
+        }
+
+        .red-btn {
+            background-color: #F44336;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feedback.correct {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .feedback.incorrect {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .score-display {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .number-range-controls {
+            width: 100%;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196F3;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196F3;
+            cursor: pointer;
+            border: none;
+        }
+
+        .instructions {
+            width: min(90vw, 600px);
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .instructions h3 {
+            color: #2196F3;
+            margin-top: 0;
+        }
+
+        .instructions p {
+            color: #666;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        @media (min-width: 768px) {
+            .header-container {
+                height: 60px;
+            }
+            
+            .game-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <a href="/" class="back-link">&larr; Back to Games</a>
+        <h1 class="game-title">Number Bonds</h1>
+    </div>
+    
+    <div class="game-container">
+        <div class="bonds-visual">
+            <svg class="bonds-svg" viewBox="0 0 300 250">
+                <!-- Line from top circle (150, 40) to left circle (60, 210) -->
+                <line class="bond-line" x1="150" y1="75" x2="95" y2="170" />
+                <!-- Line from top circle (150, 40) to right circle (240, 210) -->
+                <line class="bond-line" x1="150" y1="75" x2="205" y2="170" />
+            </svg>
+            
+            <div class="number-circle top-circle" id="target-number">10</div>
+            <div class="number-circle left-circle" id="known-addend">3</div>
+            <div class="number-circle right-circle input-circle" id="missing-addend">?</div>
+        </div>
+
+        <div class="keyboard">
+            <div class="key" data-number="1">1</div>
+            <div class="key" data-number="2">2</div>
+            <div class="key" data-number="3">3</div>
+            <div class="key" data-number="4">4</div>
+            <div class="key" data-number="5">5</div>
+            <div class="key" data-number="6">6</div>
+            <div class="key" data-number="7">7</div>
+            <div class="key" data-number="8">8</div>
+            <div class="key" data-number="9">9</div>
+            <div class="key" data-number="0">0</div>
+        </div>
+
+        <div class="keyboard-row-2">
+            <div class="key clear-btn" id="clear-key">Clear</div>
+            <div class="key enter-btn" id="enter-key">Enter</div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="score-display" id="score-display">
+            Score: 0 / 0
+        </div>
+
+        <div class="number-range-controls">
+            <div class="slider-container">
+                <label for="min-number-slider">Minimum Target: <span id="min-number-value">5</span></label>
+                <input type="range" id="min-number-slider" min="2" max="15" value="5" step="1">
+            </div>
+            <div class="slider-container">
+                <label for="max-number-slider">Maximum Target: <span id="max-number-value">20</span></label>
+                <input type="range" id="max-number-slider" min="10" max="50" value="20" step="1">
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="new-problem-btn" class="blue-btn">New Problem</button>
+            <button id="clear-btn" class="red-btn">Clear</button>
+            <button id="hint-btn" class="green-btn">Hint</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>How to Play</h3>
+        <p>Look at the top number (the target) and one of the bottom numbers (known addend).</p>
+        <p>Use the number keyboard to fill in the missing addend that makes the number bond complete.</p>
+        <p>For example: If the top shows 10 and one bottom shows 3, the missing number is 7 (because 3 + 7 = 10).</p>
+        <p>Click "New Problem" for a new challenge, "Clear" to erase your answer, or "Hint" for help.</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
