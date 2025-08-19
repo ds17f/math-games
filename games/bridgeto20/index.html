@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge to 20</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2196F3;
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF9800;
+        }
+        
+        .problem-display {
+            margin-bottom: 30px;
+        }
+        
+        .first-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .second-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 20px;
+        }
+        
+        .ten-frames-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .ten-frame {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            transition: opacity 0.3s ease;
+        }
+        
+        .ten-frame.hidden {
+            display: none;
+        }
+        
+        .circle {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #666;
+            border-radius: 50%;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .circle:hover {
+            transform: scale(1.05);
+            border-color: #2196F3;
+        }
+        
+        .circle.filled-black {
+            background-color: #333;
+            border-color: #333;
+            cursor: not-allowed;
+        }
+        
+        .circle.filled-red {
+            background-color: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+        
+        .circle.empty-clickable {
+            border-color: #2196F3;
+            border-width: 2px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1976D2;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #4CAF50;
+        }
+        
+        .feedback.incorrect {
+            color: #f44336;
+        }
+        
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .home-link:hover {
+            background-color: #1976D2;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        @media (max-width: 600px) {
+            .circle {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .game-info {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="home-link">← Home</a>
+    
+    <div class="game-container">
+        <h1>Bridge to 20</h1>
+        
+        <div class="instructions">
+            <strong>How to play:</strong> Fill the first 10-frame with the first number (black circles). 
+            Then use the second number to bridge to 20 by filling remaining spaces in the first frame (red), 
+            then continuing in the second frame (red). Click "Check Answer" when done!
+        </div>
+        
+        <div class="game-info">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Time: <span id="timer">0</span>s</div>
+        </div>
+        
+        <div class="problem-display">
+            <div class="first-number">First number: <span id="first-number">7</span></div>
+            <div class="second-number">Add: <span id="second-number">8</span></div>
+        </div>
+        
+        <div class="ten-frames-container">
+            <div class="ten-frame" id="top-frame">
+                <!-- 10 circles will be generated here -->
+            </div>
+            <div class="ten-frame" id="bottom-frame">
+                <!-- 10 circles will be generated here -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="check-btn">Check Answer</button>
+            <button class="btn btn-secondary" id="new-problem-btn">New Problem</button>
+            <button class="btn btn-secondary" id="toggle-frame-btn">Hide Bottom Frame</button>
+            <button class="btn btn-danger" id="clear-btn">Clear</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        class BridgeTo20Game {
+            constructor() {
+                this.score = 0;
+                this.startTime = Date.now();
+                this.firstNumber = 0;
+                this.secondNumber = 0;
+                this.targetSum = 0;
+                this.gameState = 'ready'; // ready, playing, answered
+                this.bottomFrameHidden = false;
+                
+                this.initializeElements();
+                this.createTenFrames();
+                this.generateNewProblem();
+                this.startTimer();
+                
+                // Bind event listeners
+                this.bindEvents();
+            }
+            
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.timerElement = document.getElementById('timer');
+                this.firstNumberElement = document.getElementById('first-number');
+                this.secondNumberElement = document.getElementById('second-number');
+                this.topFrame = document.getElementById('top-frame');
+                this.bottomFrame = document.getElementById('bottom-frame');
+                this.checkBtn = document.getElementById('check-btn');
+                this.newProblemBtn = document.getElementById('new-problem-btn');
+                this.toggleFrameBtn = document.getElementById('toggle-frame-btn');
+                this.clearBtn = document.getElementById('clear-btn');
+                this.feedbackElement = document.getElementById('feedback');
+            }
+            
+            createTenFrames() {
+                // Create top frame circles
+                for (let i = 0; i < 10; i++) {
+                    const circle = document.createElement('div');
+                    circle.className = 'circle';
+                    circle.dataset.frame = 'top';
+                    circle.dataset.index = i;
+                    this.topFrame.appendChild(circle);
+                }
+                
+                // Create bottom frame circles
+                for (let i = 0; i < 10; i++) {
+                    const circle = document.createElement('div');
+                    circle.className = 'circle';
+                    circle.dataset.frame = 'bottom';
+                    circle.dataset.index = i;
+                    this.bottomFrame.appendChild(circle);
+                }
+            }
+            
+            bindEvents() {
+                // Circle click events
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('circle') && this.gameState === 'playing') {
+                        this.handleCircleClick(e.target);
+                    }
+                });
+                
+                // Button events
+                this.checkBtn.addEventListener('click', () => this.checkAnswer());
+                this.newProblemBtn.addEventListener('click', () => this.generateNewProblem());
+                this.toggleFrameBtn.addEventListener('click', () => this.toggleBottomFrame());
+                this.clearBtn.addEventListener('click', () => this.clearFrames());
+            }
+            
+            generateNewProblem() {
+                // Generate first number (1-9)
+                this.firstNumber = Math.floor(Math.random() * 9) + 1;
+                
+                // Generate second number such that first + second > 10
+                const minSecond = Math.max(1, 11 - this.firstNumber);
+                const maxSecond = 20 - this.firstNumber;
+                this.secondNumber = Math.floor(Math.random() * (maxSecond - minSecond + 1)) + minSecond;
+                
+                this.targetSum = this.firstNumber + this.secondNumber;
+                
+                // Update display
+                this.firstNumberElement.textContent = this.firstNumber;
+                this.secondNumberElement.textContent = this.secondNumber;
+                
+                // Reset frames and set up initial state
+                this.resetFrames();
+                this.setupInitialState();
+                
+                this.gameState = 'playing';
+                this.feedbackElement.textContent = '';
+                this.feedbackElement.className = 'feedback';
+            }
+            
+            resetFrames() {
+                const allCircles = document.querySelectorAll('.circle');
+                allCircles.forEach(circle => {
+                    circle.className = 'circle';
+                    circle.textContent = '';
+                });
+            }
+            
+            setupInitialState() {
+                // Fill first n circles in top frame with black
+                const topCircles = this.topFrame.querySelectorAll('.circle');
+                for (let i = 0; i < this.firstNumber; i++) {
+                    topCircles[i].classList.add('filled-black');
+                }
+                
+                // Make remaining circles in top frame clickable
+                for (let i = this.firstNumber; i < 10; i++) {
+                    topCircles[i].classList.add('empty-clickable');
+                }
+                
+                // Make all circles in bottom frame clickable
+                const bottomCircles = this.bottomFrame.querySelectorAll('.circle');
+                bottomCircles.forEach(circle => {
+                    circle.classList.add('empty-clickable');
+                });
+            }
+            
+            handleCircleClick(circle) {
+                if (circle.classList.contains('filled-black')) {
+                    return; // Can't click filled black circles
+                }
+                
+                if (circle.classList.contains('filled-red')) {
+                    // Remove red fill
+                    circle.classList.remove('filled-red');
+                    circle.classList.add('empty-clickable');
+                    circle.textContent = '';
+                } else if (circle.classList.contains('empty-clickable')) {
+                    // Add red fill
+                    circle.classList.remove('empty-clickable');
+                    circle.classList.add('filled-red');
+                }
+            }
+            
+            clearFrames() {
+                if (this.gameState !== 'playing') return;
+                
+                // Only clear red circles, keep black ones
+                const redCircles = document.querySelectorAll('.circle.filled-red');
+                redCircles.forEach(circle => {
+                    circle.classList.remove('filled-red');
+                    circle.classList.add('empty-clickable');
+                    circle.textContent = '';
+                });
+            }
+            
+            checkAnswer() {
+                if (this.gameState !== 'playing') return;
+                
+                // Count total filled circles (black + red)
+                const blackCircles = document.querySelectorAll('.circle.filled-black').length;
+                const redCircles = document.querySelectorAll('.circle.filled-red').length;
+                const totalFilled = blackCircles + redCircles;
+                
+                const isCorrect = totalFilled === this.targetSum;
+                
+                if (isCorrect) {
+                    this.score++;
+                    this.scoreElement.textContent = this.score;
+                    this.feedbackElement.textContent = `Correct! ${this.firstNumber} + ${this.secondNumber} = ${this.targetSum}`;
+                    this.feedbackElement.className = 'feedback correct';
+                    
+                    // Auto-generate new problem after a delay
+                    setTimeout(() => {
+                        this.generateNewProblem();
+                    }, 1500);
+                    
+                    this.gameState = 'answered';
+                } else {
+                    this.feedbackElement.textContent = `Not quite right. Try again!`;
+                    this.feedbackElement.className = 'feedback incorrect';
+                    
+                    // Let them try again - don't change game state
+                }
+            }
+            
+            toggleBottomFrame() {
+                this.bottomFrameHidden = !this.bottomFrameHidden;
+                
+                if (this.bottomFrameHidden) {
+                    this.bottomFrame.classList.add('hidden');
+                    this.toggleFrameBtn.textContent = 'Show Bottom Frame';
+                } else {
+                    this.bottomFrame.classList.remove('hidden');
+                    this.toggleFrameBtn.textContent = 'Hide Bottom Frame';
+                }
+            }
+            
+            startTimer() {
+                setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    this.timerElement.textContent = elapsed;
+                }, 1000);
+            }
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BridgeTo20Game();
+        });
+    </script>
+</body>
+</html>
