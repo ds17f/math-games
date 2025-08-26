@@ -290,6 +290,17 @@
                     <a href="/games/bridgefrom20/index.html" class="play-button">Play Now</a>
                 </div>
             </div>
+            
+            <div class="game-card">
+                <div class="game-image">
+                    <div style="font-size: 20px; font-weight: bold; line-height: 1.2;">🎲🎲<br>0→100<br>Bridge!</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Race to 100</h3>
+                    <p class="game-description">Roll dice and race to 100! Practice bridging across tens with addition and subtraction.</p>
+                    <a href="/games/raceto100/index.html" class="play-button">Play Now</a>
+                </div>
+            </div>
         </div>
         
         <div class="leaderboard-section">
@@ -340,6 +351,13 @@
                     description: 'Pattern Recognition',
                     scoreType: 'n/a', // Currently doesn't have a score
                     storageKey: 'dotGameHighScore'
+                },
+                'raceto100': {
+                    name: 'Race to 100',
+                    description: 'Number Line Racing',
+                    scoreType: 'points',
+                    storageKey: 'raceTo100HighScores',
+                    configParams: ['mode', 'time']
                 }
                 // Add more games here as they are created
             },
@@ -568,6 +586,8 @@
                 switch (gameId) {
                     case 'sumgame':
                         return `Target: ${configData.targetNumber}, Grid: ${configData.gridSize}×${configData.gridSize}, Time: ${configData.timeLimit}min`;
+                    case 'raceto100':
+                        return `Mode: ${configData.mode}, Time: ${configData.time}s`;
                     default:
                         return Object.entries(configData)
                             .map(([key, value]) => `${key}: ${value}`)
