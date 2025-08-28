@@ -56,6 +56,13 @@
             margin-bottom: 30px;
             font-size: 24px;
             font-weight: bold;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 10;
+            padding: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .starting-number {
@@ -67,7 +74,14 @@
         .subtract-number {
             font-size: 32px;
             color: #f44336;
+            margin-bottom: 10px;
+        }
+        
+        .remaining-to-subtract {
+            font-size: 24px;
+            color: #9C27B0;
             margin-bottom: 20px;
+            font-weight: bold;
         }
         
         .workspace {
@@ -80,23 +94,33 @@
         
         .representation-area {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 20px;
             padding: 20px;
             background-color: #f9f9f9;
             border-radius: 10px;
             border: 2px solid #ddd;
-            min-height: 200px;
+            min-height: 300px;
+            justify-content: center;
+        }
+        
+        .column-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
         }
         
         .tens-area, .ones-area {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
             align-items: center;
-            min-height: 80px;
-            padding: 10px;
+            min-height: 200px;
+            padding: 15px 10px;
             border-radius: 8px;
+            width: 100%;
+            flex-grow: 1;
         }
         
         .tens-area {
@@ -107,6 +131,20 @@
         .ones-area {
             background-color: #fff3e0;
             border: 2px dashed #FF9800;
+        }
+        
+        .regrouped-ones, .original-ones {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .regrouped-ones {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
         }
         
         .area-label {
@@ -124,15 +162,20 @@
         }
         
         .ten-rod {
-            width: 200px;
-            height: 40px;
+            width: 80px;
+            height: 60px;
             background-color: #2196F3;
             border-radius: 5px;
             border: 2px solid #1976D2;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
         }
         
         .ten-rod:hover {
@@ -145,24 +188,10 @@
             transform: rotate(5deg);
         }
         
-        .ten-rod-segment {
-            flex: 1;
-            border-right: 1px solid #1976D2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        .ten-rod-segment:last-child {
-            border-right: none;
-        }
         
         .one-block {
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             background-color: #FF9800;
             border: 2px solid #F57C00;
             border-radius: 50%;
@@ -173,7 +202,13 @@
             justify-content: center;
             font-weight: bold;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
+        }
+        
+        .one-block.from-ten {
+            background-color: #2196F3;
+            border-color: #1976D2;
+            border-radius: 4px;
         }
         
         .one-block:hover {
@@ -200,16 +235,6 @@
             50% { transform: scale(1.1); }
         }
         
-        .regroup-instruction {
-            background-color: #e8f5e8;
-            border: 2px solid #4CAF50;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 16px;
-            color: #2e7d32;
-            font-weight: bold;
-        }
         
         .controls {
             display: flex;
@@ -303,14 +328,6 @@
             text-align: left;
         }
         
-        .step-indicator {
-            background-color: #e3f2fd;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #1976d2;
-        }
         
         .difficulty-controls {
             margin-bottom: 20px;
@@ -338,28 +355,66 @@
         }
         
         @media (max-width: 600px) {
-            .workspace {
-                gap: 20px;
+            .game-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .representation-area {
+                min-height: 250px;
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .column-container {
+                min-width: 100px;
+            }
+            
+            .tens-area, .ones-area {
+                min-height: 180px;
+                padding: 10px 5px;
             }
             
             .ten-rod {
-                width: 150px;
-                height: 35px;
+                width: 60px;
+                height: 50px;
+                font-size: 14px;
             }
             
             .one-block {
-                width: 30px;
-                height: 30px;
-                font-size: 12px;
+                width: 25px;
+                height: 25px;
+                font-size: 10px;
             }
             
             .controls {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
             }
             
             .btn {
-                width: 200px;
+                width: 180px;
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .problem-display {
+                font-size: 18px;
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .starting-number {
+                font-size: 24px;
+            }
+            
+            .subtract-number {
+                font-size: 20px;
+            }
+            
+            .remaining-to-subtract {
+                font-size: 18px;
             }
         }
     </style>
@@ -370,15 +425,6 @@
     <div class="game-container">
         <h1>Regrouping Subtraction</h1>
         
-        <div class="instructions">
-            <strong>How to play:</strong>
-            <ol>
-                <li>Look at the starting number shown as ten-rods (blue rectangles) and ones (orange circles)</li>
-                <li>When you need to subtract more than you have in ones, drag a ten-rod to the ones area to break it into 10 ones</li>
-                <li>Click on individual ones to remove them for subtraction</li>
-                <li>Check your answer when you think you've removed the right amount</li>
-            </ol>
-        </div>
         
         <div class="difficulty-controls">
             <label for="difficulty-select">Difficulty Level:</label>
@@ -398,31 +444,30 @@
             <div class="subtract-number">Subtract: <span id="subtract-number">7</span></div>
         </div>
         
-        <div class="step-indicator" id="step-indicator">
-            Step 1: Look at your starting number
-        </div>
         
         <div class="workspace">
             <div class="representation-area">
-                <div>
-                    <div class="area-label tens-label">Tens</div>
+                <div class="column-container">
+                    <div class="area-label tens-label" id="tens-label">30</div>
                     <div class="tens-area" id="tens-area">
                         <!-- Ten rods will be added here -->
                     </div>
                 </div>
                 
-                <div>
-                    <div class="area-label ones-label">Ones</div>
+                <div class="column-container">
+                    <div class="area-label ones-label" id="ones-label">5</div>
                     <div class="ones-area" id="ones-area">
-                        <!-- One blocks will be added here -->
+                        <div class="original-ones" id="original-ones">
+                            <!-- Original one blocks (orange circles) will be added here -->
+                        </div>
+                        <div class="regrouped-ones" id="regrouped-ones">
+                            <!-- Regrouped one blocks (blue squares) will be added here -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="regroup-instruction" id="regroup-instruction" style="display: none;">
-            Drag a ten-rod from the tens area to the ones area to break it into 10 ones!
-        </div>
         
         <div class="controls">
             <button class="btn btn-primary" id="check-btn">Check Answer</button>
@@ -441,9 +486,11 @@
                 this.startingNumber = 0;
                 this.subtractNumber = 0;
                 this.targetAnswer = 0;
+                this.remainingToSubtract = 0;
                 this.gameState = 'ready'; // ready, playing, answered
                 this.tensRemaining = 0;
                 this.onesRemaining = 0;
+                this.tensRemoved = 0;
                 this.onesRemoved = 0;
                 this.difficulty = 'single';
                 this.hasRegrouped = false;
@@ -461,12 +508,14 @@
                 this.subtractNumberElement = document.getElementById('subtract-number');
                 this.tensArea = document.getElementById('tens-area');
                 this.onesArea = document.getElementById('ones-area');
+                this.regroupedOnes = document.getElementById('regrouped-ones');
+                this.originalOnes = document.getElementById('original-ones');
+                this.tensLabel = document.getElementById('tens-label');
+                this.onesLabel = document.getElementById('ones-label');
                 this.checkBtn = document.getElementById('check-btn');
                 this.newProblemBtn = document.getElementById('new-problem-btn');
                 this.resetBtn = document.getElementById('reset-btn');
                 this.feedbackElement = document.getElementById('feedback');
-                this.regroupInstruction = document.getElementById('regroup-instruction');
-                this.stepIndicator = document.getElementById('step-indicator');
                 this.difficultySelect = document.getElementById('difficulty-select');
             }
             
@@ -517,6 +566,7 @@
                 // Update display
                 this.startingNumberElement.textContent = this.startingNumber;
                 this.subtractNumberElement.textContent = this.subtractNumber;
+                this.remainingToSubtract = this.subtractNumber;
                 
                 // Reset game state
                 this.resetGameState();
@@ -525,31 +575,39 @@
                 this.gameState = 'playing';
                 this.feedbackElement.textContent = '';
                 this.feedbackElement.className = 'feedback';
-                this.updateStepIndicator();
             }
             
             resetGameState() {
                 this.tensRemaining = Math.floor(this.startingNumber / 10);
                 this.onesRemaining = this.startingNumber % 10;
+                this.tensRemoved = 0;
                 this.onesRemoved = 0;
                 this.hasRegrouped = false;
-                this.regroupInstruction.style.display = 'none';
             }
             
             setupInitialRepresentation() {
                 // Clear areas
                 this.tensArea.innerHTML = '';
-                this.onesArea.innerHTML = '';
+                this.regroupedOnes.innerHTML = '';
+                this.originalOnes.innerHTML = '';
                 
                 // Add ten rods
                 for (let i = 0; i < this.tensRemaining; i++) {
                     this.createTenRod(i);
                 }
                 
-                // Add one blocks
+                // Add original one blocks
                 for (let i = 0; i < this.onesRemaining; i++) {
-                    this.createOneBlock(i);
+                    this.createOneBlock(i, false);
                 }
+                
+                // Update labels
+                this.updateLabels();
+            }
+            
+            updateLabels() {
+                this.tensLabel.textContent = this.tensRemaining * 10;
+                this.onesLabel.textContent = this.onesRemaining;
             }
             
             createTenRod(index) {
@@ -557,35 +615,40 @@
                 tenRod.className = 'ten-rod';
                 tenRod.draggable = true;
                 tenRod.dataset.index = index;
+                tenRod.textContent = '10';
                 
-                // Create segments
-                for (let i = 0; i < 10; i++) {
-                    const segment = document.createElement('div');
-                    segment.className = 'ten-rod-segment';
-                    segment.textContent = '1';
-                    tenRod.appendChild(segment);
-                }
+                // Add click handler for direct subtraction
+                tenRod.addEventListener('click', (e) => {
+                    if (this.gameState === 'playing' && !tenRod.classList.contains('removed')) {
+                        // Check if we're trying to subtract by dragging or clicking
+                        if (!e.defaultPrevented) {
+                            this.subtractTenRod(tenRod);
+                        }
+                    }
+                });
                 
                 this.tensArea.appendChild(tenRod);
             }
             
             createOneBlock(index, fromRegroup = false) {
                 const oneBlock = document.createElement('div');
-                oneBlock.className = 'one-block';
+                oneBlock.className = fromRegroup ? 'one-block from-ten' : 'one-block';
                 oneBlock.dataset.index = index;
                 oneBlock.textContent = '1';
                 
                 oneBlock.addEventListener('click', () => {
                     if (this.gameState === 'playing' && !oneBlock.classList.contains('removed')) {
-                        this.removeOneBlock(oneBlock);
+                        this.subtractOneBlock(oneBlock);
                     }
                 });
                 
-                this.onesArea.appendChild(oneBlock);
-                
+                // Append to the correct section
                 if (fromRegroup) {
+                    this.regroupedOnes.appendChild(oneBlock);
                     // Animate the new ones appearing
                     oneBlock.style.animation = 'pulse 0.5s ease-out';
+                } else {
+                    this.originalOnes.appendChild(oneBlock);
                 }
             }
             
@@ -644,85 +707,84 @@
                 }
                 this.onesRemaining += 10;
                 
+                // Update the labels to show new values
+                this.updateLabels();
+                
                 this.hasRegrouped = true;
-                this.regroupInstruction.style.display = 'none';
-                this.updateStepIndicator();
             }
             
-            removeOneBlock(oneBlock) {
+            subtractTenRod(tenRod) {
+                if (tenRod.classList.contains('removed')) return;
+                
+                // Check if we can subtract 10
+                if (this.remainingToSubtract >= 10) {
+                    tenRod.classList.add('removed');
+                    tenRod.textContent = 'X';
+                    tenRod.style.backgroundColor = '#ffebee';
+                    tenRod.style.borderColor = '#f44336';
+                    tenRod.style.borderStyle = 'dashed';
+                    tenRod.style.color = '#f44336';
+                    
+                    this.tensRemoved++;
+                    this.tensRemaining--;
+                    this.remainingToSubtract -= 10;
+                    
+                    this.updateLabels();
+                }
+            }
+            
+            subtractOneBlock(oneBlock) {
                 if (oneBlock.classList.contains('removed')) return;
                 
-                oneBlock.classList.add('removed');
-                oneBlock.textContent = 'X';
-                this.onesRemoved++;
-                
-                this.updateStepIndicator();
-                
-                // Check if they need to regroup
-                if (!this.hasRegrouped && this.onesRemoved >= this.startingNumber % 10) {
-                    const stillNeedToRemove = this.subtractNumber - this.onesRemoved;
-                    if (stillNeedToRemove > 0 && this.tensRemaining > 0) {
-                        this.regroupInstruction.style.display = 'block';
-                    }
+                // Check if we can subtract 1
+                if (this.remainingToSubtract >= 1) {
+                    oneBlock.classList.add('removed');
+                    oneBlock.textContent = 'X';
+                    
+                    this.onesRemoved++;
+                    this.onesRemaining--;
+                    this.remainingToSubtract -= 1;
+                    
+                    this.updateLabels();
                 }
             }
             
-            updateStepIndicator() {
-                if (!this.hasRegrouped && this.onesRemoved === 0) {
-                    this.stepIndicator.textContent = `Step 1: You have ${this.tensRemaining} tens and ${this.onesRemaining} ones. Need to subtract ${this.subtractNumber}.`;
-                } else if (!this.hasRegrouped && this.onesRemoved > 0) {
-                    const remaining = this.subtractNumber - this.onesRemoved;
-                    if (remaining > 0 && remaining > (this.onesRemaining - this.onesRemoved)) {
-                        this.stepIndicator.textContent = `Step 2: You've removed ${this.onesRemoved}. Need ${remaining} more, but only have ${this.onesRemaining - this.onesRemoved} ones left. Drag a ten-rod to get more ones!`;
-                    } else {
-                        this.stepIndicator.textContent = `Step 2: Removed ${this.onesRemoved} so far. Need to remove ${remaining} more ones.`;
-                    }
-                } else if (this.hasRegrouped) {
-                    const remaining = this.subtractNumber - this.onesRemoved;
-                    if (remaining > 0) {
-                        this.stepIndicator.textContent = `Step 3: Regrouped! Now you have ${this.tensRemaining} tens and ${this.onesRemaining} ones. Remove ${remaining} more ones.`;
-                    } else {
-                        this.stepIndicator.textContent = `Step 4: Perfect! You've removed exactly ${this.subtractNumber} ones. Check your answer!`;
-                    }
+            
+            checkIfComplete() {
+                if (this.remainingToSubtract === 0) {
+                    this.feedbackElement.textContent = '';
+                    this.feedbackElement.className = 'feedback';
                 }
             }
+            
             
             resetProblem() {
                 if (this.gameState !== 'playing') return;
                 
-                // Reset removed ones
-                const removedOnes = this.onesArea.querySelectorAll('.one-block.removed');
-                removedOnes.forEach(block => {
-                    block.classList.remove('removed');
-                    block.textContent = '1';
-                });
-                
-                this.onesRemoved = 0;
-                this.regroupInstruction.style.display = 'none';
-                this.updateStepIndicator();
+                // Complete reset back to original state
+                this.resetGameState();
+                this.setupInitialRepresentation();
+                this.remainingToSubtract = this.subtractNumber;
+                this.feedbackElement.textContent = '';
+                this.feedbackElement.className = 'feedback';
             }
             
             checkAnswer() {
                 if (this.gameState !== 'playing') return;
                 
-                const currentTotal = this.tensRemaining * 10 + (this.onesRemaining - this.onesRemoved);
-                const isCorrect = currentTotal === this.targetAnswer;
-                
-                if (isCorrect) {
+                if (this.remainingToSubtract === 0) {
                     this.score++;
                     this.scoreElement.textContent = this.score;
-                    this.feedbackElement.textContent = `Excellent! ${this.startingNumber} - ${this.subtractNumber} = ${this.targetAnswer}`;
+                    this.feedbackElement.textContent = `${this.startingNumber} - ${this.subtractNumber} = ${this.targetAnswer}`;
                     this.feedbackElement.className = 'feedback correct';
-                    this.stepIndicator.textContent = `🎉 Correct! The answer is ${this.targetAnswer}`;
                     
-                    // Auto-generate new problem after a delay
                     setTimeout(() => {
                         this.generateNewProblem();
                     }, 2000);
                     
                     this.gameState = 'answered';
                 } else {
-                    this.feedbackElement.textContent = `Not quite right. You currently have ${currentTotal}. The answer should be ${this.targetAnswer}. Try again!`;
+                    this.feedbackElement.textContent = 'Try again';
                     this.feedbackElement.className = 'feedback incorrect';
                 }
             }
