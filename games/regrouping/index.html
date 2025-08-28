@@ -429,6 +429,7 @@
         <div class="difficulty-controls">
             <label for="difficulty-select">Difficulty Level:</label>
             <select id="difficulty-select">
+                <option value="mixed">Mixed Practice (sometimes regrouping needed)</option>
                 <option value="single">Single Digit Subtraction (requires regrouping)</option>
                 <option value="double">Two Digit Subtraction</option>
             </select>
@@ -492,7 +493,7 @@
                 this.onesRemaining = 0;
                 this.tensRemoved = 0;
                 this.onesRemoved = 0;
-                this.difficulty = 'single';
+                this.difficulty = 'mixed';
                 this.hasRegrouped = false;
                 
                 this.initializeElements();
@@ -533,7 +534,36 @@
             }
             
             generateNewProblem() {
-                if (this.difficulty === 'single') {
+                if (this.difficulty === 'mixed') {
+                    // Mixed practice - sometimes regrouping needed, sometimes not
+                    this.startingNumber = Math.floor(Math.random() * 41) + 20; // 20-60
+                    const onesDigit = this.startingNumber % 10;
+                    
+                    // 50% chance of requiring regrouping
+                    if (Math.random() < 0.5) {
+                        // Force regrouping - subtract more than ones digit
+                        const minSubtract = onesDigit + 1;
+                        const maxSubtract = Math.min(9, this.startingNumber - 1);
+                        
+                        if (maxSubtract >= minSubtract) {
+                            this.subtractNumber = Math.floor(Math.random() * (maxSubtract - minSubtract + 1)) + minSubtract;
+                        } else {
+                            this.subtractNumber = onesDigit + 1;
+                        }
+                    } else {
+                        // No regrouping needed - subtract less than or equal to ones digit
+                        if (onesDigit > 0) {
+                            this.subtractNumber = Math.floor(Math.random() * onesDigit) + 1;
+                        } else {
+                            // If ones digit is 0, subtract a multiple of 10 or force regrouping
+                            if (Math.random() < 0.5 && this.startingNumber >= 10) {
+                                this.subtractNumber = 10; // Subtract exactly 10
+                            } else {
+                                this.subtractNumber = Math.floor(Math.random() * 9) + 1; // Force regrouping
+                            }
+                        }
+                    }
+                } else if (this.difficulty === 'single') {
                     // Single digit subtraction that requires regrouping
                     // Starting number between 20-50, subtract single digit that forces regrouping
                     this.startingNumber = Math.floor(Math.random() * 31) + 20; // 20-50
