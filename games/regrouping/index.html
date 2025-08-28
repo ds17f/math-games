@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regrouping Subtraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2196F3;
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF9800;
+        }
+        
+        .problem-display {
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .starting-number {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtract-number {
+            font-size: 32px;
+            color: #f44336;
+            margin-bottom: 20px;
+        }
+        
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+        
+        .representation-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            min-height: 200px;
+        }
+        
+        .tens-area, .ones-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            min-height: 80px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .tens-area {
+            background-color: #e3f2fd;
+            border: 2px dashed #2196F3;
+        }
+        
+        .ones-area {
+            background-color: #fff3e0;
+            border: 2px dashed #FF9800;
+        }
+        
+        .area-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .tens-label {
+            color: #2196F3;
+        }
+        
+        .ones-label {
+            color: #FF9800;
+        }
+        
+        .ten-rod {
+            width: 200px;
+            height: 40px;
+            background-color: #2196F3;
+            border-radius: 5px;
+            border: 2px solid #1976D2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            position: relative;
+        }
+        
+        .ten-rod:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+        
+        .ten-rod.dragging {
+            opacity: 0.7;
+            transform: rotate(5deg);
+        }
+        
+        .ten-rod-segment {
+            flex: 1;
+            border-right: 1px solid #1976D2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .ten-rod-segment:last-child {
+            border-right: none;
+        }
+        
+        .one-block {
+            width: 35px;
+            height: 35px;
+            background-color: #FF9800;
+            border: 2px solid #F57C00;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .one-block:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+        }
+        
+        .one-block.removed {
+            background-color: #ffebee;
+            border-color: #f44336;
+            border-style: dashed;
+            color: #f44336;
+            cursor: not-allowed;
+        }
+        
+        .one-block.selected-for-removal {
+            background-color: #f44336;
+            border-color: #d32f2f;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .regroup-instruction {
+            background-color: #e8f5e8;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 16px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1976D2;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #4CAF50;
+        }
+        
+        .feedback.incorrect {
+            color: #f44336;
+        }
+        
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .home-link:hover {
+            background-color: #1976D2;
+        }
+        
+        .instructions {
+            background-color: #fff3e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #e65100;
+            text-align: left;
+        }
+        
+        .step-indicator {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .difficulty-controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .difficulty-controls label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .difficulty-controls select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 14px;
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        @media (max-width: 600px) {
+            .workspace {
+                gap: 20px;
+            }
+            
+            .ten-rod {
+                width: 150px;
+                height: 35px;
+            }
+            
+            .one-block {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="home-link">← Home</a>
+    
+    <div class="game-container">
+        <h1>Regrouping Subtraction</h1>
+        
+        <div class="instructions">
+            <strong>How to play:</strong>
+            <ol>
+                <li>Look at the starting number shown as ten-rods (blue rectangles) and ones (orange circles)</li>
+                <li>When you need to subtract more than you have in ones, drag a ten-rod to the ones area to break it into 10 ones</li>
+                <li>Click on individual ones to remove them for subtraction</li>
+                <li>Check your answer when you think you've removed the right amount</li>
+            </ol>
+        </div>
+        
+        <div class="difficulty-controls">
+            <label for="difficulty-select">Difficulty Level:</label>
+            <select id="difficulty-select">
+                <option value="single">Single Digit Subtraction (requires regrouping)</option>
+                <option value="double">Two Digit Subtraction</option>
+            </select>
+        </div>
+        
+        <div class="game-info">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Time: <span id="timer">0</span>s</div>
+        </div>
+        
+        <div class="problem-display">
+            <div class="starting-number">Start with: <span id="starting-number">25</span></div>
+            <div class="subtract-number">Subtract: <span id="subtract-number">7</span></div>
+        </div>
+        
+        <div class="step-indicator" id="step-indicator">
+            Step 1: Look at your starting number
+        </div>
+        
+        <div class="workspace">
+            <div class="representation-area">
+                <div>
+                    <div class="area-label tens-label">Tens</div>
+                    <div class="tens-area" id="tens-area">
+                        <!-- Ten rods will be added here -->
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="area-label ones-label">Ones</div>
+                    <div class="ones-area" id="ones-area">
+                        <!-- One blocks will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="regroup-instruction" id="regroup-instruction" style="display: none;">
+            Drag a ten-rod from the tens area to the ones area to break it into 10 ones!
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="check-btn">Check Answer</button>
+            <button class="btn btn-secondary" id="new-problem-btn">New Problem</button>
+            <button class="btn btn-danger" id="reset-btn">Reset</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        class RegroupingGame {
+            constructor() {
+                this.score = 0;
+                this.startTime = Date.now();
+                this.startingNumber = 0;
+                this.subtractNumber = 0;
+                this.targetAnswer = 0;
+                this.gameState = 'ready'; // ready, playing, answered
+                this.tensRemaining = 0;
+                this.onesRemaining = 0;
+                this.onesRemoved = 0;
+                this.difficulty = 'single';
+                this.hasRegrouped = false;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.generateNewProblem();
+                this.startTimer();
+            }
+            
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.timerElement = document.getElementById('timer');
+                this.startingNumberElement = document.getElementById('starting-number');
+                this.subtractNumberElement = document.getElementById('subtract-number');
+                this.tensArea = document.getElementById('tens-area');
+                this.onesArea = document.getElementById('ones-area');
+                this.checkBtn = document.getElementById('check-btn');
+                this.newProblemBtn = document.getElementById('new-problem-btn');
+                this.resetBtn = document.getElementById('reset-btn');
+                this.feedbackElement = document.getElementById('feedback');
+                this.regroupInstruction = document.getElementById('regroup-instruction');
+                this.stepIndicator = document.getElementById('step-indicator');
+                this.difficultySelect = document.getElementById('difficulty-select');
+            }
+            
+            bindEvents() {
+                this.checkBtn.addEventListener('click', () => this.checkAnswer());
+                this.newProblemBtn.addEventListener('click', () => this.generateNewProblem());
+                this.resetBtn.addEventListener('click', () => this.resetProblem());
+                this.difficultySelect.addEventListener('change', (e) => {
+                    this.difficulty = e.target.value;
+                    this.generateNewProblem();
+                });
+                
+                // Handle drag and drop
+                this.setupDragAndDrop();
+            }
+            
+            generateNewProblem() {
+                if (this.difficulty === 'single') {
+                    // Single digit subtraction that requires regrouping
+                    // Starting number between 20-50, subtract single digit that forces regrouping
+                    this.startingNumber = Math.floor(Math.random() * 31) + 20; // 20-50
+                    const onesDigit = this.startingNumber % 10;
+                    
+                    // Subtract number must be larger than ones digit to force regrouping
+                    // But also ensure we don't go below 0
+                    const minSubtract = onesDigit + 1;
+                    const maxSubtract = Math.min(9, this.startingNumber - 1);
+                    
+                    if (maxSubtract >= minSubtract) {
+                        this.subtractNumber = Math.floor(Math.random() * (maxSubtract - minSubtract + 1)) + minSubtract;
+                    } else {
+                        // Fallback if no valid single digit exists
+                        this.subtractNumber = onesDigit + 1;
+                    }
+                } else {
+                    // Two digit subtraction
+                    this.startingNumber = Math.floor(Math.random() * 71) + 30; // 30-100
+                    this.subtractNumber = Math.floor(Math.random() * 40) + 10; // 10-49
+                    
+                    // Ensure result is positive
+                    if (this.subtractNumber >= this.startingNumber) {
+                        this.subtractNumber = this.startingNumber - Math.floor(Math.random() * 10) - 1;
+                    }
+                }
+                
+                this.targetAnswer = this.startingNumber - this.subtractNumber;
+                
+                // Update display
+                this.startingNumberElement.textContent = this.startingNumber;
+                this.subtractNumberElement.textContent = this.subtractNumber;
+                
+                // Reset game state
+                this.resetGameState();
+                this.setupInitialRepresentation();
+                
+                this.gameState = 'playing';
+                this.feedbackElement.textContent = '';
+                this.feedbackElement.className = 'feedback';
+                this.updateStepIndicator();
+            }
+            
+            resetGameState() {
+                this.tensRemaining = Math.floor(this.startingNumber / 10);
+                this.onesRemaining = this.startingNumber % 10;
+                this.onesRemoved = 0;
+                this.hasRegrouped = false;
+                this.regroupInstruction.style.display = 'none';
+            }
+            
+            setupInitialRepresentation() {
+                // Clear areas
+                this.tensArea.innerHTML = '';
+                this.onesArea.innerHTML = '';
+                
+                // Add ten rods
+                for (let i = 0; i < this.tensRemaining; i++) {
+                    this.createTenRod(i);
+                }
+                
+                // Add one blocks
+                for (let i = 0; i < this.onesRemaining; i++) {
+                    this.createOneBlock(i);
+                }
+            }
+            
+            createTenRod(index) {
+                const tenRod = document.createElement('div');
+                tenRod.className = 'ten-rod';
+                tenRod.draggable = true;
+                tenRod.dataset.index = index;
+                
+                // Create segments
+                for (let i = 0; i < 10; i++) {
+                    const segment = document.createElement('div');
+                    segment.className = 'ten-rod-segment';
+                    segment.textContent = '1';
+                    tenRod.appendChild(segment);
+                }
+                
+                this.tensArea.appendChild(tenRod);
+            }
+            
+            createOneBlock(index, fromRegroup = false) {
+                const oneBlock = document.createElement('div');
+                oneBlock.className = 'one-block';
+                oneBlock.dataset.index = index;
+                oneBlock.textContent = '1';
+                
+                oneBlock.addEventListener('click', () => {
+                    if (this.gameState === 'playing' && !oneBlock.classList.contains('removed')) {
+                        this.removeOneBlock(oneBlock);
+                    }
+                });
+                
+                this.onesArea.appendChild(oneBlock);
+                
+                if (fromRegroup) {
+                    // Animate the new ones appearing
+                    oneBlock.style.animation = 'pulse 0.5s ease-out';
+                }
+            }
+            
+            setupDragAndDrop() {
+                // Handle dragstart on ten rods
+                document.addEventListener('dragstart', (e) => {
+                    if (e.target.classList.contains('ten-rod') && this.gameState === 'playing') {
+                        e.target.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', e.target.dataset.index);
+                        e.dataTransfer.effectAllowed = 'move';
+                    }
+                });
+                
+                // Handle dragend
+                document.addEventListener('dragend', (e) => {
+                    if (e.target.classList.contains('ten-rod')) {
+                        e.target.classList.remove('dragging');
+                    }
+                });
+                
+                // Handle dragover on ones area
+                this.onesArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    this.onesArea.style.backgroundColor = '#ffecb3';
+                });
+                
+                // Handle dragleave on ones area
+                this.onesArea.addEventListener('dragleave', (e) => {
+                    this.onesArea.style.backgroundColor = '#fff3e0';
+                });
+                
+                // Handle drop on ones area
+                this.onesArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.onesArea.style.backgroundColor = '#fff3e0';
+                    
+                    const tenRodIndex = e.dataTransfer.getData('text/plain');
+                    this.regroupTenRod(tenRodIndex);
+                });
+            }
+            
+            regroupTenRod(tenRodIndex) {
+                if (this.gameState !== 'playing') return;
+                
+                // Find and remove the ten rod
+                const tenRod = this.tensArea.querySelector(`[data-index="${tenRodIndex}"]`);
+                if (!tenRod) return;
+                
+                tenRod.remove();
+                this.tensRemaining--;
+                
+                // Add 10 one blocks
+                for (let i = 0; i < 10; i++) {
+                    this.createOneBlock(this.onesRemaining + i, true);
+                }
+                this.onesRemaining += 10;
+                
+                this.hasRegrouped = true;
+                this.regroupInstruction.style.display = 'none';
+                this.updateStepIndicator();
+            }
+            
+            removeOneBlock(oneBlock) {
+                if (oneBlock.classList.contains('removed')) return;
+                
+                oneBlock.classList.add('removed');
+                oneBlock.textContent = 'X';
+                this.onesRemoved++;
+                
+                this.updateStepIndicator();
+                
+                // Check if they need to regroup
+                if (!this.hasRegrouped && this.onesRemoved >= this.startingNumber % 10) {
+                    const stillNeedToRemove = this.subtractNumber - this.onesRemoved;
+                    if (stillNeedToRemove > 0 && this.tensRemaining > 0) {
+                        this.regroupInstruction.style.display = 'block';
+                    }
+                }
+            }
+            
+            updateStepIndicator() {
+                if (!this.hasRegrouped && this.onesRemoved === 0) {
+                    this.stepIndicator.textContent = `Step 1: You have ${this.tensRemaining} tens and ${this.onesRemaining} ones. Need to subtract ${this.subtractNumber}.`;
+                } else if (!this.hasRegrouped && this.onesRemoved > 0) {
+                    const remaining = this.subtractNumber - this.onesRemoved;
+                    if (remaining > 0 && remaining > (this.onesRemaining - this.onesRemoved)) {
+                        this.stepIndicator.textContent = `Step 2: You've removed ${this.onesRemoved}. Need ${remaining} more, but only have ${this.onesRemaining - this.onesRemoved} ones left. Drag a ten-rod to get more ones!`;
+                    } else {
+                        this.stepIndicator.textContent = `Step 2: Removed ${this.onesRemoved} so far. Need to remove ${remaining} more ones.`;
+                    }
+                } else if (this.hasRegrouped) {
+                    const remaining = this.subtractNumber - this.onesRemoved;
+                    if (remaining > 0) {
+                        this.stepIndicator.textContent = `Step 3: Regrouped! Now you have ${this.tensRemaining} tens and ${this.onesRemaining} ones. Remove ${remaining} more ones.`;
+                    } else {
+                        this.stepIndicator.textContent = `Step 4: Perfect! You've removed exactly ${this.subtractNumber} ones. Check your answer!`;
+                    }
+                }
+            }
+            
+            resetProblem() {
+                if (this.gameState !== 'playing') return;
+                
+                // Reset removed ones
+                const removedOnes = this.onesArea.querySelectorAll('.one-block.removed');
+                removedOnes.forEach(block => {
+                    block.classList.remove('removed');
+                    block.textContent = '1';
+                });
+                
+                this.onesRemoved = 0;
+                this.regroupInstruction.style.display = 'none';
+                this.updateStepIndicator();
+            }
+            
+            checkAnswer() {
+                if (this.gameState !== 'playing') return;
+                
+                const currentTotal = this.tensRemaining * 10 + (this.onesRemaining - this.onesRemoved);
+                const isCorrect = currentTotal === this.targetAnswer;
+                
+                if (isCorrect) {
+                    this.score++;
+                    this.scoreElement.textContent = this.score;
+                    this.feedbackElement.textContent = `Excellent! ${this.startingNumber} - ${this.subtractNumber} = ${this.targetAnswer}`;
+                    this.feedbackElement.className = 'feedback correct';
+                    this.stepIndicator.textContent = `🎉 Correct! The answer is ${this.targetAnswer}`;
+                    
+                    // Auto-generate new problem after a delay
+                    setTimeout(() => {
+                        this.generateNewProblem();
+                    }, 2000);
+                    
+                    this.gameState = 'answered';
+                } else {
+                    this.feedbackElement.textContent = `Not quite right. You currently have ${currentTotal}. The answer should be ${this.targetAnswer}. Try again!`;
+                    this.feedbackElement.className = 'feedback incorrect';
+                }
+            }
+            
+            startTimer() {
+                setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    this.timerElement.textContent = elapsed;
+                }, 1000);
+            }
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RegroupingGame();
+        });
+    </script>
+</body>
+</html>
