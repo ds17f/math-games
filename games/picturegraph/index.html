@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Graph to Equal Groups</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2196F3;
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF9800;
+        }
+        
+        .picture-graph {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .graph-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .graph-legend {
+            background-color: #fff3e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #FF9800;
+        }
+        
+        .legend-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e65100;
+        }
+        
+        .graph-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .graph-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .row-label {
+            font-weight: bold;
+            font-size: 16px;
+            min-width: 80px;
+            color: #333;
+        }
+        
+        .icons-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .icon {
+            font-size: 32px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+        }
+        
+        .question-area {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #2196F3;
+        }
+        
+        .question-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 20px;
+        }
+        
+        .input-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .input-box {
+            width: 60px;
+            height: 50px;
+            border: 3px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .input-box:hover {
+            border-color: #2196F3;
+            transform: scale(1.05);
+        }
+        
+        .input-box.active {
+            border-color: #2196F3;
+            background-color: #e3f2fd;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+        
+        .input-box.correct {
+            border-color: #4CAF50;
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .input-box.incorrect {
+            border-color: #f44336;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+            width: 100%;
+            max-width: 280px;
+        }
+        
+        .keyboard-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .key {
+            padding: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .key:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+        
+        .key:active {
+            transform: translateY(0);
+            background-color: #c0c0c0;
+        }
+        
+        .key.enter-btn {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .key.enter-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .key.clear-btn {
+            background-color: #F44336;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .key.clear-btn:hover {
+            background-color: #da190b;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1976D2;
+        }
+        
+        .btn-secondary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #45a049;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #4CAF50;
+        }
+        
+        .feedback.incorrect {
+            color: #f44336;
+        }
+        
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .home-link:hover {
+            background-color: #1976D2;
+        }
+        
+        
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+                text-align: left;
+            }
+            
+            .picture-graph {
+                text-align: left;
+            }
+            
+            .graph-rows {
+                align-items: flex-start;
+            }
+            
+            .input-area {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+                font-size: 18px;
+            }
+            
+            .graph-row {
+                flex-direction: column;
+                text-align: left;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .icons-container {
+                justify-content: flex-start;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="home-link">← Home</a>
+    
+    <div class="game-container">
+        <h1>Picture Graph to Equal Groups</h1>
+        
+        <div class="game-info">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Time: <span id="timer">0</span>s</div>
+        </div>
+        
+        <div class="picture-graph">
+            <div class="graph-title" id="graph-title">Animals at the Zoo</div>
+            
+            <div class="graph-legend">
+                <div class="legend-text" id="legend-text">Each 🦁 represents 4 animals</div>
+            </div>
+            
+            <div class="graph-rows" id="graph-rows">
+                <!-- Graph rows will be generated here -->
+            </div>
+            
+        </div>
+        
+        <div class="question-area">
+            <div class="question-text">Fill in the equal groups:</div>
+            
+            <div class="input-area">
+                <span id="groups-input-box" class="input-box active">?</span>
+                <span>groups of</span>
+                <span id="items-input-box" class="input-box">?</span>
+                <span>=</span>
+                <span id="total-input-box" class="input-box">?</span>
+            </div>
+            
+            <div class="keyboard" id="keyboard">
+                <div class="key" data-number="1">1</div>
+                <div class="key" data-number="2">2</div>
+                <div class="key" data-number="3">3</div>
+                <div class="key" data-number="4">4</div>
+                <div class="key" data-number="5">5</div>
+                <div class="key" data-number="6">6</div>
+                <div class="key" data-number="7">7</div>
+                <div class="key" data-number="8">8</div>
+                <div class="key" data-number="9">9</div>
+                <div class="key" data-number="0">0</div>
+            </div>
+            
+            <div class="keyboard-row-2" id="keyboard-row-2">
+                <div class="key clear-btn" id="clear-key">Clear</div>
+                <div class="key enter-btn" id="enter-key">Check</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" id="new-problem-btn">New Problem</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        class PictureGraphGame {
+            constructor() {
+                this.score = 0;
+                this.startTime = Date.now();
+                this.currentInputIndex = 0; // 0 = groups, 1 = items per group, 2 = total
+                this.inputs = ['', '', ''];
+                this.correctAnswers = [0, 0, 0]; // [groups, items_per_group, total]
+                
+                this.themes = [
+                    {
+                        title: "Animals at the Zoo",
+                        icon: "🦁",
+                        labels: ["Lions", "Tigers", "Bears", "Elephants", "Giraffes"],
+                        totalText: "How many animals are there in total?"
+                    },
+                    {
+                        title: "Fruits in Baskets",
+                        icon: "🍎",
+                        labels: ["Apples", "Oranges", "Bananas", "Grapes", "Berries"],
+                        totalText: "How many fruits are there in total?"
+                    },
+                    {
+                        title: "Cars in Parking Lots",
+                        icon: "🚗",
+                        labels: ["Lot A", "Lot B", "Lot C", "Lot D", "Street"],
+                        totalText: "How many cars are there in total?"
+                    },
+                    {
+                        title: "Books on Shelves",
+                        icon: "📚",
+                        labels: ["Fiction", "Science", "History", "Math", "Art"],
+                        totalText: "How many books are there in total?"
+                    },
+                    {
+                        title: "Flowers in Gardens",
+                        icon: "🌸",
+                        labels: ["Roses", "Tulips", "Daisies", "Lilies", "Sunflowers"],
+                        totalText: "How many flowers are there in total?"
+                    },
+                    {
+                        title: "Students in Classes",
+                        icon: "👨‍🎓",
+                        labels: ["Class A", "Class B", "Class C", "Class D", "Class E"],
+                        totalText: "How many students are there in total?"
+                    },
+                    {
+                        title: "Toys in Boxes",
+                        icon: "🧸",
+                        labels: ["Box 1", "Box 2", "Box 3", "Box 4", "Box 5"],
+                        totalText: "How many toys are there in total?"
+                    },
+                    {
+                        title: "Stars in Groups",
+                        icon: "⭐",
+                        labels: ["Group A", "Group B", "Group C", "Group D", "Group E"],
+                        totalText: "How many stars are there in total?"
+                    }
+                ];
+                
+                this.currentProblem = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.generateNewProblem();
+                this.startTimer();
+            }
+            
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.timerElement = document.getElementById('timer');
+                this.graphTitle = document.getElementById('graph-title');
+                this.legendText = document.getElementById('legend-text');
+                this.graphRows = document.getElementById('graph-rows');
+                
+                this.inputBoxes = [
+                    document.getElementById('groups-input-box'),
+                    document.getElementById('items-input-box'),
+                    document.getElementById('total-input-box')
+                ];
+                
+                this.newProblemBtn = document.getElementById('new-problem-btn');
+                this.clearKey = document.getElementById('clear-key');
+                this.enterKey = document.getElementById('enter-key');
+                this.feedbackElement = document.getElementById('feedback');
+            }
+            
+            bindEvents() {
+                // Input box clicks
+                this.inputBoxes.forEach((box, index) => {
+                    box.addEventListener('click', () => this.selectInputBox(index));
+                });
+                
+                // Number pad events
+                const numberKeys = document.querySelectorAll('.key[data-number]');
+                numberKeys.forEach(key => {
+                    key.addEventListener('click', () => {
+                        const number = key.getAttribute('data-number');
+                        this.handleKeyPress(number);
+                    });
+                });
+                
+                this.clearKey.addEventListener('click', () => this.clearCurrentInput());
+                this.enterKey.addEventListener('click', () => this.checkAnswers());
+                this.newProblemBtn.addEventListener('click', () => this.generateNewProblem());
+                
+                // Physical keyboard support
+                document.addEventListener('keydown', (e) => {
+                    if (e.key >= '0' && e.key <= '9') {
+                        this.handleKeyPress(e.key);
+                    } else if (e.key === 'Backspace') {
+                        this.clearCurrentInput();
+                    } else if (e.key === 'Enter') {
+                        this.checkAnswers();
+                    } else if (e.key === 'Tab') {
+                        e.preventDefault();
+                        this.selectNextInputBox();
+                    }
+                });
+            }
+            
+            generateRandomProblem() {
+                // Select random theme
+                const theme = this.themes[Math.floor(Math.random() * this.themes.length)];
+                
+                // Generate random items per icon (2-5 for smaller multiplication)
+                const itemsPerIcon = Math.floor(Math.random() * 4) + 2;
+                
+                // Generate random number of rows (2-3 for simpler problems)
+                const numRows = Math.floor(Math.random() * 2) + 2;
+                
+                // Generate random icon counts for each row (1-4 icons per row for smaller totals)
+                const rows = [];
+                const shuffledLabels = [...theme.labels].sort(() => Math.random() - 0.5);
+                
+                for (let i = 0; i < numRows; i++) {
+                    const iconCount = Math.floor(Math.random() * 4) + 1;
+                    rows.push({
+                        label: shuffledLabels[i],
+                        count: iconCount
+                    });
+                }
+                
+                // Ensure total doesn't exceed reasonable limits for young learners
+                const totalIcons = rows.reduce((sum, row) => sum + row.count, 0);
+                const totalItems = totalIcons * itemsPerIcon;
+                
+                // If total is too high, regenerate with smaller numbers
+                if (totalItems > 30) {
+                    return this.generateRandomProblem();
+                }
+                
+                return {
+                    title: theme.title,
+                    icon: theme.icon,
+                    itemsPerIcon: itemsPerIcon,
+                    rows: rows,
+                    totalText: theme.totalText
+                };
+            }
+            
+            generateNewProblem() {
+                // Generate a new random problem
+                this.currentProblem = this.generateRandomProblem();
+                
+                // Calculate totals
+                const totalIcons = this.currentProblem.rows.reduce((sum, row) => sum + row.count, 0);
+                const totalItems = totalIcons * this.currentProblem.itemsPerIcon;
+                
+                // Set correct answers
+                this.correctAnswers = [
+                    totalIcons,  // number of groups (total icons)
+                    this.currentProblem.itemsPerIcon,  // items per group
+                    totalItems   // total items
+                ];
+                
+                // Update display
+                this.graphTitle.textContent = this.currentProblem.title;
+                this.legendText.textContent = `Each ${this.currentProblem.icon} represents ${this.currentProblem.itemsPerIcon} items`;
+                
+                // Generate graph rows
+                this.graphRows.innerHTML = '';
+                this.currentProblem.rows.forEach(row => {
+                    const rowElement = document.createElement('div');
+                    rowElement.className = 'graph-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'row-label';
+                    label.textContent = row.label;
+                    
+                    const iconsContainer = document.createElement('div');
+                    iconsContainer.className = 'icons-container';
+                    
+                    for (let i = 0; i < row.count; i++) {
+                        const icon = document.createElement('div');
+                        icon.className = 'icon';
+                        icon.textContent = this.currentProblem.icon;
+                        iconsContainer.appendChild(icon);
+                    }
+                    
+                    rowElement.appendChild(label);
+                    rowElement.appendChild(iconsContainer);
+                    this.graphRows.appendChild(rowElement);
+                });
+                
+                // Reset inputs
+                this.inputs = ['', '', ''];
+                this.currentInputIndex = 0;
+                this.updateInputDisplay();
+                this.selectInputBox(0);
+                this.clearFeedback();
+            }
+            
+            selectInputBox(index) {
+                this.currentInputIndex = index;
+                this.inputBoxes.forEach((box, i) => {
+                    box.classList.toggle('active', i === index);
+                });
+            }
+            
+            selectNextInputBox() {
+                const nextIndex = (this.currentInputIndex + 1) % this.inputBoxes.length;
+                this.selectInputBox(nextIndex);
+            }
+            
+            handleKeyPress(number) {
+                // Limit input length
+                if (this.inputs[this.currentInputIndex].length < 3) {
+                    if (this.inputs[this.currentInputIndex] === '' && number === '0') {
+                        // Don't allow leading zeros unless the answer is actually 0
+                        if (this.correctAnswers[this.currentInputIndex] !== 0) {
+                            return;
+                        }
+                    }
+                    
+                    this.inputs[this.currentInputIndex] += number;
+                    this.updateInputDisplay();
+                    this.clearFeedback();
+                }
+            }
+            
+            clearCurrentInput() {
+                this.inputs[this.currentInputIndex] = '';
+                this.updateInputDisplay();
+                this.clearFeedback();
+                
+                // Clear visual feedback from all boxes
+                this.inputBoxes.forEach(box => {
+                    box.classList.remove('correct', 'incorrect');
+                });
+            }
+            
+            updateInputDisplay() {
+                this.inputBoxes.forEach((box, index) => {
+                    box.textContent = this.inputs[index] || '?';
+                });
+            }
+            
+            checkAnswers() {
+                // Validate all input boxes have values
+                let allFilled = true;
+                const userAnswers = [];
+                
+                this.inputs.forEach((input, index) => {
+                    if (input === '') {
+                        allFilled = false;
+                    } else {
+                        userAnswers[index] = parseInt(input);
+                    }
+                });
+                
+                if (!allFilled) {
+                    this.showFeedback('Please fill in all boxes.', false);
+                    return;
+                }
+                
+                // Check if answers are correct
+                let allCorrect = true;
+                
+                this.inputBoxes.forEach((box, index) => {
+                    const userAnswer = userAnswers[index];
+                    const correctAnswer = this.correctAnswers[index];
+                    
+                    if (userAnswer === correctAnswer) {
+                        box.classList.add('correct');
+                        box.classList.remove('incorrect');
+                    } else {
+                        box.classList.add('incorrect');
+                        box.classList.remove('correct');
+                        allCorrect = false;
+                    }
+                });
+                
+                if (allCorrect) {
+                    this.score++;
+                    this.scoreElement.textContent = this.score;
+                    this.showFeedback(`✓ Excellent! ${userAnswers[0]} groups of ${userAnswers[1]} = ${userAnswers[2]}`, true);
+                    
+                    setTimeout(() => {
+                        this.generateNewProblem();
+                    }, 2500);
+                } else {
+                    this.showFeedback('Not quite right. Try again!', false);
+                }
+            }
+            
+            showFeedback(message, isCorrect) {
+                this.feedbackElement.textContent = message;
+                this.feedbackElement.className = isCorrect ? 'feedback correct' : 'feedback incorrect';
+            }
+            
+            clearFeedback() {
+                this.feedbackElement.textContent = '';
+                this.feedbackElement.className = 'feedback';
+            }
+            
+            startTimer() {
+                setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    this.timerElement.textContent = elapsed;
+                }, 1000);
+            }
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PictureGraphGame();
+        });
+    </script>
+</body>
+</html>

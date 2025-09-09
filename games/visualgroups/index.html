@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Groups to Multiplication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2196F3;
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF9800;
+        }
+        
+        .visual-area {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .groups-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border: 3px solid #2196F3;
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 80px;
+            min-height: 80px;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            background-color: #FF9800;
+            border-radius: 50%;
+            border: 2px solid #F57C00;
+        }
+        
+        .equation-area {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #2196F3;
+        }
+        
+        .equation-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        
+        .equation-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .input-box {
+            width: 60px;
+            height: 50px;
+            border: 3px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .input-box:hover {
+            border-color: #2196F3;
+            transform: scale(1.05);
+        }
+        
+        .input-box.active {
+            border-color: #2196F3;
+            background-color: #e3f2fd;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+        
+        .input-box.correct {
+            border-color: #4CAF50;
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .input-box.incorrect {
+            border-color: #f44336;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .static-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+            width: 100%;
+            max-width: 280px;
+        }
+        
+        .keyboard-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .key {
+            padding: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .key:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+        
+        .key:active {
+            transform: translateY(0);
+            background-color: #c0c0c0;
+        }
+        
+        .key.enter-btn {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .key.enter-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .key.clear-btn {
+            background-color: #F44336;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .key.clear-btn:hover {
+            background-color: #da190b;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #45a049;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #4CAF50;
+        }
+        
+        .feedback.incorrect {
+            color: #f44336;
+        }
+        
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .home-link:hover {
+            background-color: #1976D2;
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .groups-container {
+                gap: 15px;
+            }
+            
+            .group {
+                min-width: 60px;
+                min-height: 60px;
+                padding: 10px;
+            }
+            
+            .dot {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .equation-display {
+                font-size: 28px;
+                gap: 8px;
+            }
+            
+            .input-box {
+                width: 50px;
+                height: 45px;
+                font-size: 20px;
+            }
+            
+            .static-number {
+                font-size: 28px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="home-link">← Home</a>
+    
+    <div class="game-container">
+        <h1>Visual Groups to Multiplication</h1>
+        
+        <div class="game-info">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Time: <span id="timer">0</span>s</div>
+        </div>
+        
+        <div class="visual-area">
+            <div class="groups-container" id="groups-container">
+                <!-- Visual groups will be generated here -->
+            </div>
+        </div>
+        
+        <div class="equation-area">
+            <div class="equation-text">Fill in the missing number:</div>
+            
+            <div class="equation-display" id="equation-display">
+                <!-- Equation will be generated here -->
+            </div>
+            
+            <div class="keyboard" id="keyboard">
+                <div class="key" data-number="1">1</div>
+                <div class="key" data-number="2">2</div>
+                <div class="key" data-number="3">3</div>
+                <div class="key" data-number="4">4</div>
+                <div class="key" data-number="5">5</div>
+                <div class="key" data-number="6">6</div>
+                <div class="key" data-number="7">7</div>
+                <div class="key" data-number="8">8</div>
+                <div class="key" data-number="9">9</div>
+                <div class="key" data-number="0">0</div>
+            </div>
+            
+            <div class="keyboard-row-2" id="keyboard-row-2">
+                <div class="key clear-btn" id="clear-key">Clear</div>
+                <div class="key enter-btn" id="enter-key">Check</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" id="new-problem-btn">New Problem</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        class VisualGroupsGame {
+            constructor() {
+                this.score = 0;
+                this.startTime = Date.now();
+                this.currentInput = '';
+                this.correctAnswer = 0;
+                this.inputBox = null;
+                this.problemType = null; // 'groups', 'items', or 'total'
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.generateNewProblem();
+                this.startTimer();
+            }
+            
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.timerElement = document.getElementById('timer');
+                this.groupsContainer = document.getElementById('groups-container');
+                this.equationDisplay = document.getElementById('equation-display');
+                this.newProblemBtn = document.getElementById('new-problem-btn');
+                this.clearKey = document.getElementById('clear-key');
+                this.enterKey = document.getElementById('enter-key');
+                this.feedbackElement = document.getElementById('feedback');
+            }
+            
+            bindEvents() {
+                // Number pad events
+                const numberKeys = document.querySelectorAll('.key[data-number]');
+                numberKeys.forEach(key => {
+                    key.addEventListener('click', () => {
+                        const number = key.getAttribute('data-number');
+                        this.handleKeyPress(number);
+                    });
+                });
+                
+                this.clearKey.addEventListener('click', () => this.clearInput());
+                this.enterKey.addEventListener('click', () => this.checkAnswer());
+                this.newProblemBtn.addEventListener('click', () => this.generateNewProblem());
+                
+                // Physical keyboard support
+                document.addEventListener('keydown', (e) => {
+                    if (e.key >= '0' && e.key <= '9') {
+                        this.handleKeyPress(e.key);
+                    } else if (e.key === 'Backspace') {
+                        this.clearInput();
+                    } else if (e.key === 'Enter') {
+                        this.checkAnswer();
+                    }
+                });
+            }
+            
+            generateRandomProblem() {
+                // Generate small multiplication problems (2-5 groups, 2-5 items per group)
+                const numGroups = Math.floor(Math.random() * 4) + 2; // 2-5
+                const itemsPerGroup = Math.floor(Math.random() * 4) + 2; // 2-5
+                const total = numGroups * itemsPerGroup;
+                
+                // Ensure total doesn't exceed 25 for manageable problems
+                if (total > 25) {
+                    return this.generateRandomProblem();
+                }
+                
+                // Randomly choose what to ask for
+                const problemTypes = ['groups', 'items', 'total'];
+                const problemType = problemTypes[Math.floor(Math.random() * problemTypes.length)];
+                
+                return {
+                    numGroups,
+                    itemsPerGroup,
+                    total,
+                    problemType
+                };
+            }
+            
+            generateNewProblem() {
+                const problem = this.generateRandomProblem();
+                this.numGroups = problem.numGroups;
+                this.itemsPerGroup = problem.itemsPerGroup;
+                this.total = problem.total;
+                this.problemType = problem.problemType;
+                
+                // Set correct answer based on problem type
+                switch (this.problemType) {
+                    case 'groups':
+                        this.correctAnswer = this.numGroups;
+                        break;
+                    case 'items':
+                        this.correctAnswer = this.itemsPerGroup;
+                        break;
+                    case 'total':
+                        this.correctAnswer = this.total;
+                        break;
+                }
+                
+                this.createVisualGroups();
+                this.createEquation();
+                this.currentInput = '';
+                this.clearFeedback();
+            }
+            
+            createVisualGroups() {
+                this.groupsContainer.innerHTML = '';
+                
+                for (let g = 0; g < this.numGroups; g++) {
+                    const group = document.createElement('div');
+                    group.className = 'group';
+                    
+                    for (let i = 0; i < this.itemsPerGroup; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'dot';
+                        group.appendChild(dot);
+                    }
+                    
+                    this.groupsContainer.appendChild(group);
+                }
+            }
+            
+            createEquation() {
+                this.equationDisplay.innerHTML = '';
+                
+                // Create equation elements based on problem type
+                let elements = [];
+                
+                switch (this.problemType) {
+                    case 'groups':
+                        elements = [
+                            { type: 'input', value: '?' },
+                            { type: 'text', value: '×' },
+                            { type: 'static', value: this.itemsPerGroup },
+                            { type: 'text', value: '=' },
+                            { type: 'static', value: this.total }
+                        ];
+                        break;
+                    case 'items':
+                        elements = [
+                            { type: 'static', value: this.numGroups },
+                            { type: 'text', value: '×' },
+                            { type: 'input', value: '?' },
+                            { type: 'text', value: '=' },
+                            { type: 'static', value: this.total }
+                        ];
+                        break;
+                    case 'total':
+                        elements = [
+                            { type: 'static', value: this.numGroups },
+                            { type: 'text', value: '×' },
+                            { type: 'static', value: this.itemsPerGroup },
+                            { type: 'text', value: '=' },
+                            { type: 'input', value: '?' }
+                        ];
+                        break;
+                }
+                
+                elements.forEach(element => {
+                    if (element.type === 'input') {
+                        const inputBox = document.createElement('div');
+                        inputBox.className = 'input-box active';
+                        inputBox.textContent = '?';
+                        inputBox.addEventListener('click', () => {
+                            // Remove active from all input boxes and add to clicked one
+                            document.querySelectorAll('.input-box').forEach(box => {
+                                box.classList.remove('active');
+                            });
+                            inputBox.classList.add('active');
+                        });
+                        this.equationDisplay.appendChild(inputBox);
+                        this.inputBox = inputBox; // Store reference to the input box
+                    } else if (element.type === 'static') {
+                        const staticElement = document.createElement('span');
+                        staticElement.className = 'static-number';
+                        staticElement.textContent = element.value;
+                        this.equationDisplay.appendChild(staticElement);
+                    } else {
+                        const textElement = document.createElement('span');
+                        textElement.className = 'static-number';
+                        textElement.textContent = element.value;
+                        this.equationDisplay.appendChild(textElement);
+                    }
+                });
+            }
+            
+            handleKeyPress(number) {
+                if (!this.inputBox) return;
+                
+                // Limit input length
+                if (this.currentInput.length < 2) {
+                    if (this.currentInput === '' && number === '0' && this.correctAnswer !== 0) {
+                        // Don't allow leading zeros unless answer is 0
+                        return;
+                    }
+                    
+                    this.currentInput += number;
+                    this.inputBox.textContent = this.currentInput;
+                    this.clearFeedback();
+                }
+            }
+            
+            clearInput() {
+                if (!this.inputBox) return;
+                
+                this.currentInput = '';
+                this.inputBox.textContent = '?';
+                this.clearFeedback();
+                
+                // Clear visual feedback
+                this.inputBox.classList.remove('correct', 'incorrect');
+            }
+            
+            checkAnswer() {
+                if (!this.inputBox || this.currentInput === '') {
+                    this.showFeedback('Please enter a number.', false);
+                    return;
+                }
+                
+                const userAnswer = parseInt(this.currentInput);
+                
+                if (userAnswer === this.correctAnswer) {
+                    this.score++;
+                    this.scoreElement.textContent = this.score;
+                    this.inputBox.classList.add('correct');
+                    this.inputBox.classList.remove('incorrect');
+                    
+                    let message = '';
+                    switch (this.problemType) {
+                        case 'groups':
+                            message = `✓ Correct! ${this.numGroups} groups of ${this.itemsPerGroup} = ${this.total}`;
+                            break;
+                        case 'items':
+                            message = `✓ Correct! ${this.numGroups} groups of ${this.itemsPerGroup} = ${this.total}`;
+                            break;
+                        case 'total':
+                            message = `✓ Correct! ${this.numGroups} × ${this.itemsPerGroup} = ${this.total}`;
+                            break;
+                    }
+                    
+                    this.showFeedback(message, true);
+                    
+                    setTimeout(() => {
+                        this.generateNewProblem();
+                    }, 2500);
+                } else {
+                    this.inputBox.classList.add('incorrect');
+                    this.inputBox.classList.remove('correct');
+                    this.showFeedback('Not quite right. Try again!', false);
+                }
+            }
+            
+            showFeedback(message, isCorrect) {
+                this.feedbackElement.textContent = message;
+                this.feedbackElement.className = isCorrect ? 'feedback correct' : 'feedback incorrect';
+            }
+            
+            clearFeedback() {
+                this.feedbackElement.textContent = '';
+                this.feedbackElement.className = 'feedback';
+            }
+            
+            startTimer() {
+                setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    this.timerElement.textContent = elapsed;
+                }, 1000);
+            }
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new VisualGroupsGame();
+        });
+    </script>
+</body>
+</html>
